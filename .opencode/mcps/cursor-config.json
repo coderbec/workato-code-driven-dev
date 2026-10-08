@@ -1,0 +1,22 @@
+{
+  "comment": "Cursor IDE MCP configuration - use in your Cursor workspace settings",
+  "mcpServers": {
+    "workato-developer-api": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./scripts/mcp-wrapper.js", "workato-developer-api"],
+      "env": {
+        "WORKATO_API_TOKEN": "${WORKATO_API_TOKEN}",
+        "WORKATO_WORKSPACE_ID": "${WORKATO_WORKSPACE_ID}"
+      }
+    },
+    "workato-airo": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./scripts/mcp-wrapper.js", "workato-airo"],
+      "env": {
+        "AIRO_API_TOKEN": "${AIRO_API_TOKEN}"
+      }
+    }
+  }
+}

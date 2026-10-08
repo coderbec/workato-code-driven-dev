@@ -1,0 +1,34 @@
+{
+  "comment": "Generic MCP Client Configuration - works with any MCP-compatible client",
+  "mcpServers": {
+    "workato-developer-api": {
+      "type": "stdio",
+      "description": "Workato Developer API - Workspace management",
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://app.workato.com/mcp",
+        "--header",
+        "Authorization: Bearer ${WORKATO_API_TOKEN}"
+      ],
+      "env": {
+        "WORKATO_API_TOKEN": "${WORKATO_API_TOKEN}",
+        "WORKATO_WORKSPACE_ID": "${WORKATO_WORKSPACE_ID}"
+      }
+    },
+    "workato-airo": {
+      "type": "stdio",
+      "description": "AIRO MCP - Custom connector building from natural language",
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://app.workato.com/mcp/airo",
+        "--header",
+        "Authorization: Bearer ${AIRO_API_TOKEN}"
+      ],
+      "env": {
+        "AIRO_API_TOKEN": "${AIRO_API_TOKEN}"
+      }
+    }
+  }
+}

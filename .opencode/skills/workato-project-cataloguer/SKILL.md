@@ -1,6 +1,8 @@
-# Workato Project Cataloguer Skill
+# Workato Project Cataloguer
 
 **Purpose**: Discover, catalogue, and export all recipes and projects from your Workato workspace.
+
+**Skill ID**: `workato-project-cataloguer`
 
 **When to use**: 
 - First-time setup to understand what recipes you have
@@ -175,9 +177,14 @@ Cataloguer: "Export inventory"
 
 ## Technical Details
 
-**Calls API**: `GET /api/recipes`, `GET /api/projects` (for discovery)
+**MCP Server**: `workato-developer-api` (for discovery/cataloging)
 
-**CLI Integration**: Coordinates with `wk CLI` for hydration
+**CLI Integration**: Coordinates with `wk CLI` for hydration via CLI Orchestrator
+
+**API Calls**: 
+- `GET /api/recipes` - Full catalog
+- `GET /api/projects` - Project structure
+- Metadata for project-level analysis
 
 **Requires**: 
 - WORKATO_API_TOKEN with read access
@@ -254,10 +261,16 @@ Result: 51 recipes now in Git (9 newly added)
 
 ## Limitations
 
-- ⚠️ Hydration uses wk CLI (requires prior authentication)
-- ⚠️ Project-level selection only (can't cherry-pick individual recipes during hydration)
+- ⚠️ Read-only operation (doesn't modify recipes)
+- ⚠️ Returns only recipe names/IDs (not full recipe code)
+- ⚠️ Doesn't include job history (use Developer API separately)
 - ⚠️ Rate limited by Workato API
-- ⚠️ Large projects may take time to hydrate
+
+## Setup Requirements
+
+1. Configure `WORKATO_API_TOKEN` in environment
+2. Configure `WORKATO_WORKSPACE_ID` in environment
+3. Ensure `workato-developer-api` MCP server is configured
 
 ## Workflow: First Setup vs. Ongoing
 

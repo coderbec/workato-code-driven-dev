@@ -1,0 +1,129 @@
+// OpenCode Configuration - Workato Code-Driven Development
+// This configuration makes the project compatible with OpenCode, Claude Desktop, Cursor, and other agent harnesses
+// For OpenCode documentation, see: https://opencode.ai/docs
+
+{
+  "version": "1.0.0",
+  
+  "project": {
+    "name": "Workato Code-Driven Development",
+    "description": "Workato workspace management with Git synchronization, recipe cataloging, and CI/CD integration",
+    "version": "1.0.0"
+  },
+
+  // MCP Servers - Standard protocol for tool integration
+  "mcpServers": {
+    "workato-developer-api": {
+      "type": "stdio",
+      "description": "Workato Developer API - Workspace management (recipes, connections, jobs, genies)",
+      "disabled": false,
+      "env": {
+        "WORKATO_API_TOKEN": "${WORKATO_API_TOKEN}",
+        "WORKATO_WORKSPACE_ID": "${WORKATO_WORKSPACE_ID}"
+      },
+      // Remote MCP configuration (works with any MCP client)
+      "command": "npx",
+      "args": ["mcp-remote", "https://app.workato.com/mcp", "--header", "Authorization: Bearer ${WORKATO_API_TOKEN}"],
+      "authentication": {
+        "type": "header",
+        "headerName": "Authorization",
+        "headerValue": "Bearer ${WORKATO_API_TOKEN}"
+      }
+    },
+    
+    "workato-airo": {
+      "type": "stdio",
+      "description": "AIRO MCP - Custom connector building from natural language",
+      "disabled": false,
+      "env": {
+        "AIRO_API_TOKEN": "${AIRO_API_TOKEN}"
+      },
+      "command": "npx",
+      "args": ["mcp-remote", "https://app.workato.com/mcp/airo", "--header", "Authorization: Bearer ${AIRO_API_TOKEN}"],
+      "authentication": {
+        "type": "header",
+        "headerName": "Authorization",
+        "headerValue": "Bearer ${AIRO_API_TOKEN}"
+      }
+    }
+  },
+
+  // Skills - Specialized workflows and knowledge
+  "skills": [
+    {
+      "id": "workato-project-cataloguer",
+      "name": "Workato Project Cataloguer",
+      "path": ".opencode/skills/workato-project-cataloguer/SKILL.md",
+      "enabled": true,
+      "description": "Discover, catalogue, and export all recipes and projects from your Workato workspace"
+    },
+    {
+      "id": "workato-cli-orchestrator",
+      "name": "Workato CLI Orchestrator",
+      "path": ".opencode/skills/workato-cli-orchestrator/SKILL.md",
+      "enabled": true,
+      "description": "Manage recipe synchronization between Git and Workato using wk CLI"
+    }
+  ],
+
+  // Agents - Available agent types and configurations
+  "agents": {
+    "explore": {
+      "enabled": true,
+      "description": "Fast agent for exploring the Workato codebase"
+    },
+    "general": {
+      "enabled": true,
+      "description": "General-purpose agent for complex tasks"
+    }
+  },
+
+  // Environment variables required
+  "env": {
+    "required": [
+      "WORKATO_API_TOKEN",
+      "WORKATO_WORKSPACE_ID"
+    ],
+    "optional": [
+      "AIRO_API_TOKEN",
+      "GITHUB_TOKEN",
+      "GITHUB_REPO"
+    ]
+  },
+
+  // Commands and scripts
+  "commands": {
+    "wk:auth": "npm run wk:auth",
+    "wk:status": "npm run wk:status",
+    "wk:pull": "npm run wk:pull",
+    "wk:push": "npm run wk:push",
+    "wk:diff": "npm run wk:diff",
+    "lint": "npm run lint",
+    "lint:fix": "npm run lint:fix"
+  },
+
+  // Compatibility settings
+  "compatibility": {
+    "claude-desktop": {
+      "supported": true,
+      "config-path": "~/.config/Claude/claude_desktop_config.json"
+    },
+    "opencode": {
+      "supported": true,
+      "version": "1.0.0+"
+    },
+    "cursor": {
+      "supported": true,
+      "note": "Use .opencode/opencode.jsonc in workspace settings"
+    },
+    "generic-mcp-client": {
+      "supported": true,
+      "note": "Use standard MCP protocol configuration"
+    }
+  },
+
+  // Import existing Claude config
+  "importFrom": {
+    "claudeConfig": ".claude/claude.md"
+  }
+}

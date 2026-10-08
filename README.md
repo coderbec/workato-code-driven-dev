@@ -63,6 +63,7 @@ node scripts/setup.js
 cp .env.example .env
 # Edit .env with:
 # - WORKATO_API_TOKEN (Workspace Admin > API clients)
+# - WORKATO_WORKSPACE_ID (your workspace ID)
 # - Azure credentials (if using Terraform)
 ```
 
@@ -72,15 +73,39 @@ npm run wk:auth
 npm run wk:status
 ```
 
-#### 4️⃣ Pull Existing Recipes
+#### 4️⃣ Discover Your Projects (NEW: Selective Hydration)
+Use Claude or your AI client to discover all projects:
 ```bash
-npm run wk:pull
+# Using Claude Desktop / OpenCode / Cursor:
+Claude: "I'm setting up for the first time, show me all projects"
+→ Returns full inventory with recipe counts and activity status
+→ You can then choose which projects to hydrate
+```
+
+Or use CLI directly:
+```bash
+npm run wk:pull --project "Data Sync"
+npm run wk:pull --project "Customer API"
+```
+
+#### 5️⃣ Hydrate Selected Projects to Git
+```bash
+# Claude will guide you through this, or manually:
 git add recipes/
-git commit -m "Initial recipe backup"
+git commit -m "Initial hydration: Data Sync & Customer API"
 git push
 ```
 
-#### 5️⃣ Optional: Deploy Infrastructure
+#### 6️⃣ Add More Projects Later (Iterative Approach)
+After initial setup, you can add more projects without re-syncing:
+```bash
+Claude: "Which projects can I still hydrate?"
+Claude: "Hydrate Internal Tools to Git"
+→ Downloads only new projects
+→ Doesn't re-pull already hydrated recipes
+```
+
+#### 7️⃣ Optional: Deploy Infrastructure
 ```bash
 cp terraform/environments/dev.tfvars.example terraform/environments/dev.tfvars
 # Edit with your Azure credentials
@@ -138,7 +163,28 @@ npm run terraform:apply
 
 ## 🛠️ Tools & Commands
 
-### NPM Scripts
+### AI-Assisted Workflow (Recommended)
+
+Use Claude Desktop, OpenCode, or Cursor with these commands:
+
+```
+# Initial Discovery
+"I'm setting up for the first time, show me all projects"
+→ List all projects with recipe counts and activity status
+
+"Hydrate [project names] to Git"
+→ Selectively pull chosen projects (not all-or-nothing)
+
+"Which projects haven't I hydrated yet?"
+→ Show remaining projects ready for future hydration
+
+# Ongoing Operations
+"Pull latest recipes from Workato"
+"Push recipe changes to Workato"
+"Show me the differences between Git and Workato"
+```
+
+### NPM Scripts (Direct CLI Approach)
 
 ```bash
 # Development
@@ -146,9 +192,10 @@ npm run setup              # Run setup wizard
 npm run lint              # Check recipe syntax & standards
 npm run lint:fix          # Auto-fix linting issues
 
-# Workato CLI (wk)
+# Workato CLI (wk) - Discovery & Hydration
 npm run wk:auth           # Authenticate with Workato
 npm run wk:pull           # Pull recipes from Workato to Git
+npm run wk:pull --project "Project Name"  # Pull specific project
 npm run wk:push           # Push recipes from Git to Workato
 npm run wk:status         # Check sync status
 npm run wk:diff           # Show differences
@@ -194,10 +241,10 @@ az keyvault secret show --vault-name kv-workato-dev --name db-password
 
 ```
 workato-code-driven-dev/
-├── README.md                          # This file
+├── README.md                          # This file (you are here)
 ├── .env.example                       # Environment variables template
 ├── .gitignore                         # Git ignore rules
-├── mcp.json                           # MCP server configuration
+├── mcp.json                           # MCP server configuration (legacy)
 ├── claude_desktop_config.json         # Claude Desktop MCP setup
 ├── linter-config.json                 # Recipe linting rules
 ├── package.json                       # NPM dependencies & scripts
@@ -222,7 +269,20 @@ workato-code-driven-dev/
 │   ├── setup.js                       # Setup wizard
 │   └── setup-db-connection.sh         # Database setup (TODO)
 │
-├── .claude/                           # 🤖 Claude integration
+├── .opencode/                         # ⭐ Universal AI client config (RECOMMENDED)
+│   ├── opencode.jsonc                 # Config for OpenCode (auto-detected)
+│   ├── README.md                      # Setup guide
+│   ├── SETUP-BY-CLIENT.md             # Client-specific instructions
+│   ├── COMPATIBILITY.md               # Verification details
+│   ├── mcps/                          # MCP configs per client
+│   │   ├── claude-desktop-config.json
+│   │   ├── cursor-config.json
+│   │   └── generic-mcp-client-config.json
+│   └── skills/                        # Skill definitions
+│       ├── workato-project-cataloguer/SKILL.md
+│       └── workato-cli-orchestrator/SKILL.md
+│
+├── .claude/                           # 🤖 Claude Desktop (legacy)
 │   ├── claude.md                      # Claude configuration guide
 │   └── skills/                        # Claude skills
 │       ├── workato-project-cataloguer.md
@@ -234,6 +294,8 @@ workato-code-driven-dev/
     │   ├── test.yml
     │   └── deploy.yml
 ```
+
+**ℹ️ Note**: The `.opencode/` directory is the recommended configuration for all AI clients. The `.claude/` directory is maintained for backward compatibility.
 
 ---
 
@@ -278,13 +340,39 @@ AZURE_CLIENT_SECRET=...
 
 ## 📊 Development Workflow
 
-### Typical Day
+### Initial Setup (First Time)
+
+```
+1. Set up your AI client (OpenCode, Claude Desktop, or Cursor)
+   See: .opencode/SETUP-BY-CLIENT.md
+
+2. Ask your AI client: "I'm setting up for the first time, show me all projects"
+   → See all projects with recipe counts and activity status
+
+3. Choose which projects to hydrate:
+   "Hydrate Data Sync and Customer API to Git"
+   → AI client pulls selected projects via wk CLI
+   → Recipes saved to recipes/ directory
+   → Shows status of each project
+
+4. Commit initial hydration:
+   git add recipes/
+   git commit -m "Initial hydration: Data Sync & Customer API"
+   git push
+
+5. Later, add more projects as needed:
+   "Hydrate Internal Tools to Git"
+   → Only new projects downloaded
+   → Existing projects not re-synced
+```
+
+### Typical Day (After Setup)
 
 ```
 Morning:
   1. git pull (get team's changes)
-  2. npm run wk:pull (sync from Workato)
-  3. Resolve any git conflicts
+  2. Ask AI: "Show me differences between Git and Workato"
+  3. Resolve any conflicts
 
 During Development:
   1. Create/edit recipe JSON in recipes/
@@ -293,37 +381,77 @@ During Development:
   4. git commit (save to Git)
 
 Before Push:
-  1. npm run wk:diff (review changes)
+  1. Ask AI: "Show me differences between Git and Workato"
   2. npm run wk:push (sync to Workato)
   3. git push (share with team)
 
 After Work:
-  1. npm run wk:pull (capture any changes)
+  1. Ask AI: "Pull latest recipes from Workato"
   2. git status (check everything committed)
+  
+Or Just Use CLI:
+  1. npm run wk:pull
+  2. npm run wk:diff
+  3. npm run wk:push
 ```
 
-### With Claude Desktop
+### With Claude Desktop / OpenCode / Cursor
 
+**Initial Setup Workflow (Recommended)**:
 ```
-1. Open Claude Desktop
-2. "List all recipes in my workspace"
-   → Uses Developer API MCP
+1. Open your AI client (Claude Desktop, OpenCode, or Cursor)
+
+2. "I'm setting up for the first time, show me all projects"
+   → Cataloguer discovers all projects
+   → Shows: names, recipe counts, activity status
+   → Example:
+     1. Data Sync (24 recipes) - Last modified 2 days ago
+     2. Customer API (18 recipes) - Last modified 1 week ago
+     3. Internal Tools (9 recipes) - Last modified 1 month ago
+     4. Experiments (3 recipes) - Last modified 3 months ago
+     Total: 54 recipes across 4 projects
+
+3. "Hydrate Data Sync and Customer API to Git"
+   → CLI Orchestrator pulls via wk CLI
+   → Downloads full recipe definitions
+   → Saves to recipes/[project-name]/
+   → Shows: ✅ Data Sync: 24 recipes (OK)
+           ✅ Customer API: 18 recipes (OK)
+           ⚠️ Remaining: Internal Tools, Experiments (available on request)
+
+4. Git workflow:
+   $ git add recipes/
+   $ git commit -m "Initial hydration: Data Sync & Customer API"
+   $ git push
+
+5. Later, add more projects incrementally:
+   "Hydrate Internal Tools to Git"
+   → Pulls only new project (9 recipes)
+   → No need to re-sync existing recipes
+   → Ready to commit again
+```
+
+**Other AI-Powered Commands**:
+```
+✅ "List all recipes in my workspace"
+   → Developer API MCP
    → Returns: all recipes, status, metadata
 
-3. "Build a connector for the Weather API"
-   → Uses AIRO MCP
+✅ "Build a connector for the Weather API"
+   → AIRO MCP
    → Generates: connection, actions, triggers
 
-4. "Pull latest recipes from Workato"
-   → Uses wk CLI Orchestrator skill
-   → Saves to recipes/ directory
+✅ "Show me the differences between Git and Workato"
+   → Compare local vs remote
+   → Identify conflicts
 
-5. npm run lint
-   → Check syntax
-   → Fix issues
+✅ "Which recipes haven't run in the last 30 days?"
+   → Identify inactive recipes
+   → Plan cleanup
 
-6. git commit && git push
-   → Save to version control
+✅ "Export a complete recipe inventory as JSON"
+   → Programmatic access to metadata
+   → Use for reports/analysis
 ```
 
 ---
@@ -346,55 +474,120 @@ Push to `main` branch → GitHub Actions → Deploy
 
 ---
 
-## 📋 Claude Skills
+## 📋 Skills (Claude Desktop, OpenCode, Cursor)
 
 ### 1. Workato Project Cataloguer
-**Discovery & Inventory** — Find all recipes, projects, health status
+**Discovery & Selective Hydration** — Find projects, choose what to hydrate
 
+**First-Time Setup Commands**:
 ```
-Claude: "List all recipes in my workspace"
-→ Cataloguer uses Developer API MCP
-→ Returns: JSON with all recipes, projects, status
+"I'm setting up for the first time, show me all projects"
+→ Lists all projects with recipe counts and activity status
+→ Helps you decide which to hydrate first
+
+"Hydrate [project names] to Git"
+→ Selective hydration of chosen projects
+→ Uses CLI Orchestrator internally
+→ Only pulls what you choose (not all-or-nothing)
+
+"I want selective hydration, help me choose"
+→ Interactive guide for decision-making
+→ Shows project metadata to help decide
 ```
 
-**Location**: `.claude/skills/workato-project-cataloguer.md`
+**Ongoing Commands**:
+```
+"Which projects can I still hydrate?"
+→ Shows remaining projects not yet in Git
+→ Ready for incremental additions
+
+"List all recipes in my workspace"
+→ Full inventory of all recipes
+
+"Which recipes haven't run in the last 30 days?"
+→ Identify inactive recipes for cleanup
+```
+
+**Location**: 
+- `.opencode/skills/workato-project-cataloguer/SKILL.md` (OpenCode/Generic)
+- `.claude/skills/workato-project-cataloguer.md` (Claude Desktop)
+
+---
 
 ### 2. Workato CLI Orchestrator
-**Sync & Deployment** — Pull/push recipes, check diffs
+**Recipe Sync & Deployment** — Pull/push recipes, check diffs, validate
 
 ```
-Claude: "Pull all recipes from Workato"
+"Pull all recipes from Workato"
 → Orchestrator uses wk CLI
 → Downloads recipes to recipes/ directory
 → Ready to commit to Git
+
+"Push recipe changes to Workato"
+→ Uploads modified recipes
+→ Verifies deployment
+→ Shows status
+
+"Show me the differences between Git and Workato"
+→ Compare local vs remote
+→ Identify conflicts before pushing
 ```
 
-**Location**: `.claude/skills/workato-cli-orchestrator.md`
+**Location**: 
+- `.opencode/skills/workato-cli-orchestrator/SKILL.md` (OpenCode/Generic)
+- `.claude/skills/workato-cli-orchestrator.md` (Claude Desktop)
+
+---
+
+### How to Use Skills
+
+These skills are automatically available in:
+- ✅ **OpenCode** — Use `.opencode/opencode.jsonc` (auto-detected)
+- ✅ **Claude Desktop** — Configure MCP servers, use `.claude/skills/`
+- ✅ **Cursor IDE** — Configure MCP servers in workspace settings
+
+See [.opencode/README.md](.opencode/README.md) for client-specific setup.
 
 ---
 
 ## 🐛 Troubleshooting
 
-### "Cannot find module 'mcp-remote'"
+### AI Client Issues
+
+#### "AI client doesn't show Cataloguer skill"
+1. Verify MCP servers are configured (see `.opencode/SETUP-BY-CLIENT.md`)
+2. Check environment variables are set: `WORKATO_API_TOKEN`, `WORKATO_WORKSPACE_ID`
+3. Restart your AI client (Claude Desktop, OpenCode, or Cursor)
+4. See: `.opencode/SETUP-BY-CLIENT.md` → Troubleshooting section
+
+#### "Hydration command not working"
+1. Ensure wk CLI is installed and authenticated: `npm run wk:auth`
+2. Check wk CLI status: `npm run wk:status`
+3. Verify project names exist and are exact matches
+4. Try direct CLI command: `npm run wk:pull --project "Exact Project Name"`
+
+#### "Cannot find module 'mcp-remote'"
 ```bash
 npm install -g mcp-remote
 # or
 npx mcp-remote [rest of command]
 ```
 
-### "Authentication failed"
+### CLI Issues
+
+#### "Authentication failed"
 ```bash
 npm run wk:auth
 # Re-enter credentials
 ```
 
-### "Linter errors"
+#### "Linter errors"
 ```bash
 npm run lint:fix
 # Auto-fixes formatting issues
 ```
 
-### "Recipe not syncing"
+#### "Recipe not syncing"
 ```bash
 npm run wk:status
 npm run wk:diff
@@ -402,17 +595,39 @@ npm run wk:diff
 npm run wk:push
 ```
 
-### "Terraform fails to initialize"
+#### "Selective project hydration failed"
+```bash
+# Verify project exists
+npm run wk:status
+
+# Try with exact project name (case-sensitive)
+npm run wk:pull --project "Data Sync"
+
+# If still failing, try full sync
+npm run wk:pull
+```
+
+#### "Terraform fails to initialize"
 ```bash
 npm run terraform:init
 # Ensure all variables in .env are set
 ```
 
-### "Claude Desktop won't connect"
+### Client-Specific Issues
+
+#### Claude Desktop Won't Connect
 1. Restart Claude Desktop
 2. Check `~/.config/Claude/claude_desktop_config.json`
 3. Verify `WORKATO_API_TOKEN` is set
 4. Run: `node -e "console.log(process.env.WORKATO_API_TOKEN)"`
+
+#### OpenCode Issues
+- See: https://opencode.ai/docs
+- Check: `.opencode/README.md` → Troubleshooting
+
+#### Cursor IDE Issues
+- See: `.opencode/SETUP-BY-CLIENT.md` → Cursor IDE section
+- Verify workspace settings have MCP configuration
 
 ---
 
@@ -420,9 +635,12 @@ npm run terraform:init
 
 | Document | Purpose |
 |---|---|
-| [.claude/claude.md](.claude/claude.md) | Claude Desktop & MCP setup |
-| [.claude/skills/](..claude/skills/) | Claude skills & operations |
-| [terraform/](terraform/) | Infrastructure configuration |
+| [.opencode/README.md](.opencode/README.md) | **START HERE** — Universal client setup & overview |
+| [.opencode/SETUP-BY-CLIENT.md](.opencode/SETUP-BY-CLIENT.md) | Step-by-step setup for OpenCode, Claude Desktop, Cursor |
+| [.opencode/COMPATIBILITY.md](.opencode/COMPATIBILITY.md) | Technical verification & compliance |
+| [.opencode/skills/](./opencode/skills/) | Skill documentation (Cataloguer, CLI Orchestrator) |
+| [.claude/claude.md](.claude/claude.md) | Claude Desktop configuration (legacy) |
+| [terraform/](terraform/) | Infrastructure as Code configuration |
 | [recipe-templates/](recipe-templates/) | Recipe examples & templates |
 
 ---
