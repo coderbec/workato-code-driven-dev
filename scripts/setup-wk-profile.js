@@ -30,9 +30,9 @@ async function setupWkProfile() {
   const apiToken = process.env.WORKATO_API_TOKEN;
   const endpoint = process.env.WORKATO_API_ENDPOINT || 'https://app.au.workato.com';
   
-  // For customers: profile name should be custom
-  // Derive from workspace or use default
-  let profileName = process.env.WORKATO_PROFILE || 'workato-dev';
+  console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+  console.log('║        🔐 Setting up NEW wk CLI Profile from .env Token      ║');
+  console.log('╚═══════════════════════════════════════════════════════════════╝\n');
 
   // Check if API token is missing or a placeholder
   const isInvalid = !apiToken || 
@@ -40,10 +40,6 @@ async function setupWkProfile() {
     apiToken.startsWith('${') ||
     apiToken.toLowerCase().includes('placeholder') ||
     apiToken.toLowerCase().includes('your_');
-
-  console.log('\n╔═══════════════════════════════════════════════════════════════╗');
-  console.log('║        🔐 Setting up wk CLI Profile                           ║');
-  console.log('╚═══════════════════════════════════════════════════════════════╝\n');
 
   if (isInvalid) {
     console.error('❌ Error: WORKATO_API_TOKEN in .env is not configured\n');
@@ -59,17 +55,21 @@ async function setupWkProfile() {
     process.exit(1);
   }
 
-  // Ask for custom profile name (optional)
+  // CRITICAL: Use a profile name that is UNIQUE and NOT a default
+  // This ensures we create a NEW profile, not use an existing one
+  let profileName = 'workato-project-' + Date.now();
+  
   console.log('📋 Configuration:\n');
-  console.log(`Current settings from .env:`);
   console.log(`  API Token: ${apiToken.substring(0, 15)}...${apiToken.substring(apiToken.length - 5)}`);
   console.log(`  Endpoint: ${endpoint}`);
-  console.log(`  Profile Name: ${profileName}\n`);
+  console.log(`  New Profile Name: ${profileName}\n`);
   
-  const customProfile = await prompt('Enter custom profile name (press Enter to use default): ');
+  const customProfile = await prompt('Enter custom profile name (press Enter to use generated name): ');
   if (customProfile.trim()) {
     profileName = customProfile.trim();
   }
+  
+  console.log(`\n📝 Creating new profile: ${profileName}\n`);
 
   console.log(`📋 Configuration:`);
   console.log(`   Profile Name: ${profileName}`);
@@ -77,35 +77,23 @@ async function setupWkProfile() {
   console.log(`   Endpoint: ${endpoint}\n`);
 
   try {
-    // Check if profile already exists
-    console.log('🔍 Checking if profile already exists...');
-    let profileExists = false;
-    try {
-      execSync(`wk auth list --profile ${profileName} --json`, {
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe']
-      });
-      profileExists = true;
-      console.log(`✅ Profile "${profileName}" already exists`);
-      console.log('   Skipping creation (already configured)\n');
-    } catch (error) {
-      // Profile doesn't exist, create it
-      console.log(`   Profile not found, creating new one...\n`);
-    }
+    // CRITICAL: ALWAYS create a NEW profile with the token from .env
+    // Do NOT check if profile exists or reuse default profiles
+    console.log('🔐 Creating NEW wk CLI profile with your API token...\n');
+    
+    // wk auth login requires: --token, --environment, --region, optionally --name
+    const environment = 'dev';
+    const region = 'au';
+    
+    execSync(
+      `wk auth login --token "${apiToken}" --environment ${environment} --region ${region} --name ${profileName} --force --no-input`,
+      {
+        stdio: 'inherit',
+        timeout: 30000
+      }
+    );
 
-    if (!profileExists) {
-      // Store the API token in wk CLI
-      console.log('🔐 Storing API token in wk CLI...\n');
-      execSync(
-        `wk auth login --api-token ${apiToken} --name ${profileName} --endpoint ${endpoint}`,
-        {
-          stdio: 'inherit',
-          timeout: 30000
-        }
-      );
-
-      console.log('\n✅ New profile created!\n');
-    }
+    console.log('\n✅ New profile created!\n');
 
     // Verify setup by checking auth status
     console.log('✨ Verifying profile setup...\n');
@@ -115,14 +103,13 @@ async function setupWkProfile() {
     });
     console.log(authStatus);
 
-    // Update .env if profile name was changed
-    if (profileName !== process.env.WORKATO_PROFILE) {
-      console.log('\n💾 Updating .env file with new profile name...\n');
-      let envContent = fs.readFileSync(path.join(process.cwd(), '.env'), 'utf-8');
-      envContent = envContent.replace(/WORKATO_PROFILE=.*/, `WORKATO_PROFILE=${profileName}`);
-      fs.writeFileSync(path.join(process.cwd(), '.env'), envContent);
-      console.log('✅ .env updated\n');
-    }
+    // CRITICAL: Update .env with the NEW profile name
+    // This ensures all subsequent commands use the NEW profile, not defaults
+    console.log('💾 Updating .env with new profile name...\n');
+    let envContent = fs.readFileSync(path.join(process.cwd(), '.env'), 'utf-8');
+    envContent = envContent.replace(/WORKATO_PROFILE=.*/g, `WORKATO_PROFILE=${profileName}`);
+    fs.writeFileSync(path.join(process.cwd(), '.env'), envContent);
+    console.log(`✅ .env updated: WORKATO_PROFILE=${profileName}\n`);
 
     console.log('✅ Profile setup complete!\n');
     console.log('📋 Next Steps:\n');
