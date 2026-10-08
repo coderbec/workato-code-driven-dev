@@ -19,7 +19,16 @@ require('dotenv').config();
 async function discoverProjects() {
   try {
     // Check if wk profile is set up
-    const profile = process.env.WORKATO_PROFILE || 'workato-dev';
+    let profile = process.env.WORKATO_PROFILE || 'workato-dev';
+    
+    // Handle variable references like ${WORKATO_DEV_ANZ_PRESALES}
+    if (profile && profile.startsWith('${') && profile.endsWith('}')) {
+      const varName = profile.slice(2, -1);
+      const resolvedProfile = process.env[varName];
+      if (resolvedProfile) {
+        profile = resolvedProfile;
+      }
+    }
     
     console.log('\n🔍 Discovering projects in your Workato workspace...\n');
     console.log(`📌 Using profile: ${profile}\n`);

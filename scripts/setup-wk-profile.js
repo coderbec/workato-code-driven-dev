@@ -27,8 +27,18 @@ function prompt(question) {
 }
 
 async function setupWkProfile() {
-  const apiToken = process.env.WORKATO_API_TOKEN;
+  let apiToken = process.env.WORKATO_API_TOKEN;
   const endpoint = process.env.WORKATO_API_ENDPOINT || 'https://app.au.workato.com';
+
+  // Handle variable references like ${WORKATO_DEV_ANZ_PRESALES}
+  if (apiToken && apiToken.startsWith('${') && apiToken.endsWith('}')) {
+    const varName = apiToken.slice(2, -1);
+    const resolvedToken = process.env[varName];
+    if (resolvedToken) {
+      apiToken = resolvedToken;
+      console.log(`📌 Resolved \${${varName}} to actual token\n`);
+    }
+  }
   
   console.log('\n╔═══════════════════════════════════════════════════════════════╗');
   console.log('║        🔐 Setting up NEW wk CLI Profile from .env Token      ║');
@@ -86,7 +96,7 @@ async function setupWkProfile() {
     const region = 'au';
     
     execSync(
-      `wk auth login --token "${apiToken}" --environment ${environment} --region ${region} --name ${profileName} --force --no-input`,
+      `wk auth login --token "${apiToken}" --environment ${environment} --region ${region} --name "${profileName}" --force --no-input`,
       {
         stdio: 'inherit',
         timeout: 30000
