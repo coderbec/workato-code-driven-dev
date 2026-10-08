@@ -14,14 +14,16 @@ require('dotenv').config();
  */
 
 function getProjectsList() {
+  const profile = process.env.WORKATO_PROFILE || 'workato-dev';
   try {
-    const projectsJSON = execSync('wk folders list --projects --json', {
+    const projectsJSON = execSync(`wk folders list --projects --json --profile ${profile}`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe']
     });
     return JSON.parse(projectsJSON);
   } catch (error) {
-    console.error('❌ Failed to list projects');
+    console.error('❌ Failed to list projects\n');
+    console.error('Make sure to run setup first: npm run setup:wk-profile');
     throw error;
   }
 }
@@ -152,8 +154,9 @@ ${workspaceInfo}${syncEntries}`;
       // Get recipe count to confirm
       let recipeCount = 0;
       try {
+        const profile = process.env.WORKATO_PROFILE || 'workato-dev';
         const recipesJSON = execSync(
-          `wk recipes list --folder ${project.id} --json --per-page 1000`,
+          `wk recipes list --folder ${project.id} --json --per-page 1000 --profile ${profile}`,
           {
             encoding: 'utf-8',
             stdio: ['pipe', 'pipe', 'pipe']

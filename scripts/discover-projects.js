@@ -3,6 +3,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 /**
  * Discover all projects/folders in your Workato workspace
@@ -11,25 +12,32 @@ const path = require('path');
  * Usage:
  *   npm run discover:projects
  *   node scripts/discover-projects.js
+ * 
+ * Note: Requires wk CLI setup first. Run: npm run setup:wk-profile
  */
 
 async function discoverProjects() {
   try {
+    // Check if wk profile is set up
+    const profile = process.env.WORKATO_PROFILE || 'workato-dev';
+    
     console.log('\n🔍 Discovering projects in your Workato workspace...\n');
+    console.log(`📌 Using profile: ${profile}\n`);
 
     // Step 1: Get all projects
     let projects = [];
     try {
-      const projectsJSON = execSync('wk folders list --projects --json', {
+      const projectsJSON = execSync(`wk folders list --projects --json --profile ${profile}`, {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe']
       });
       projects = JSON.parse(projectsJSON);
     } catch (error) {
-      console.error('❌ Failed to list projects. Make sure:');
+      console.error('❌ Failed to list projects. Make sure:\n');
       console.error('   1. wk CLI is installed: which wk');
-      console.error('   2. You are authenticated: wk auth status');
-      console.error('   3. .env file has WORKATO_API_TOKEN');
+      console.error('   2. Profile is set up: npm run setup:wk-profile');
+      console.error('   3. .env file has WORKATO_API_TOKEN and WORKATO_PROFILE\n');
+      console.error('Error details:', error.message);
       process.exit(1);
     }
 
@@ -51,7 +59,7 @@ async function discoverProjects() {
       
       try {
         const recipesJSON = execSync(
-          `wk recipes list --folder ${project.id} --json --per-page 1000`,
+          `wk recipes list --folder ${project.id} --json --per-page 1000 --profile ${profile}`,
           {
             encoding: 'utf-8',
             stdio: ['pipe', 'pipe', 'pipe'],

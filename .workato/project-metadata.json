@@ -1,13 +1,13 @@
 {
-  "discoveredAt": "2026-10-08T22:18:10.626Z",
+  "discoveredAt": "2026-10-08T22:25:57.879Z",
   "totalProjects": 3,
   "projects": [
     {
       "name": "Email Conversion",
       "id": 63743,
-      "recipes": 1,
-      "lastModified": "5/7/2025",
-      "status": "Active"
+      "recipes": "—",
+      "lastModified": "Unknown",
+      "status": "⚠️ Error"
     },
     {
       "name": "AOF Accelerator",

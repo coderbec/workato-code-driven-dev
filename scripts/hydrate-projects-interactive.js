@@ -68,14 +68,16 @@ async function confirmSelection(selectedProjects) {
 }
 
 function getProjectsList() {
+  const profile = process.env.WORKATO_PROFILE || 'workato-dev';
   try {
-    const projectsJSON = execSync('wk folders list --projects --json', {
+    const projectsJSON = execSync(`wk folders list --projects --json --profile ${profile}`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe']
     });
     return JSON.parse(projectsJSON);
   } catch (error) {
-    console.error('❌ Failed to list projects');
+    console.error('❌ Failed to list projects\n');
+    console.error('Make sure to run setup first: npm run setup:wk-profile');
     throw error;
   }
 }
@@ -135,7 +137,7 @@ function hydrateProjects(projectNames) {
       let recipeCount = 0;
       try {
         const recipesJSON = execSync(
-          `wk recipes list --folder ${project.id} --json --per-page 1000`,
+          `wk recipes list --folder ${project.id} --json --per-page 1000 --profile ${profile}`,
           {
             encoding: 'utf-8',
             stdio: ['pipe', 'pipe', 'pipe']
@@ -179,18 +181,20 @@ async function main() {
     // Discover projects
     console.log('\n🔍 Discovering projects...\n');
     
+    const profile = process.env.WORKATO_PROFILE || 'workato-dev';
+    
     let projects = [];
     try {
-      const projectsJSON = execSync('wk folders list --projects --json', {
+      const projectsJSON = execSync(`wk folders list --projects --json --profile ${profile}`, {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe']
       });
       projects = JSON.parse(projectsJSON);
     } catch (error) {
-      console.error('\n❌ Failed to discover projects. Make sure:');
+      console.error('\n❌ Failed to discover projects. Make sure:\n');
       console.error('   1. wk CLI is installed: which wk');
-      console.error('   2. You are authenticated: wk auth status');
-      console.error('   3. .env file has WORKATO_API_TOKEN\n');
+      console.error('   2. Profile is set up: npm run setup:wk-profile');
+      console.error('   3. .env file has WORKATO_API_TOKEN and WORKATO_PROFILE\n');
       rl.close();
       process.exit(1);
     }
@@ -213,7 +217,7 @@ async function main() {
       
       try {
         const recipesJSON = execSync(
-          `wk recipes list --folder ${project.id} --json --per-page 1000`,
+          `wk recipes list --folder ${project.id} --json --per-page 1000 --profile ${profile}`,
           {
             encoding: 'utf-8',
             stdio: ['pipe', 'pipe', 'pipe'],

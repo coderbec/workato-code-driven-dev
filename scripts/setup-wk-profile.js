@@ -15,7 +15,7 @@ require('dotenv').config();
  */
 
 function setupWkProfile() {
-  const profileName = process.env.WORKATO_PROFILE || 'default';
+  const profileName = process.env.WORKATO_PROFILE || 'workato-dev';
   const apiToken = process.env.WORKATO_API_TOKEN;
   const endpoint = process.env.WORKATO_API_ENDPOINT || 'https://app.au.workato.com';
 
@@ -31,42 +31,60 @@ function setupWkProfile() {
 
   console.log(`📋 Configuration:`);
   console.log(`   Profile Name: ${profileName}`);
-  console.log(`   API Token: ${apiToken.substring(0, 10)}...`);
+  console.log(`   API Token: ${apiToken.substring(0, 10)}...${apiToken.substring(apiToken.length - 5)}`);
   console.log(`   Endpoint: ${endpoint}\n`);
 
   try {
     // Check if profile already exists
     console.log('🔍 Checking if profile already exists...');
+    let profileExists = false;
     try {
       execSync(`wk auth list --profile ${profileName} --json`, {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe']
       });
-      console.log(`✅ Profile "${profileName}" already exists\n`);
-      return true;
+      profileExists = true;
+      console.log(`✅ Profile "${profileName}" already exists`);
+      console.log('   Skipping creation (already configured)\n');
     } catch (error) {
       // Profile doesn't exist, create it
       console.log(`   Profile not found, creating new one...\n`);
     }
 
-    // Store the API token in wk CLI
-    console.log('🔐 Storing API token in wk CLI...');
-    execSync(
-      `wk auth login --api-token ${apiToken} --name ${profileName} --endpoint ${endpoint}`,
-      {
-        stdio: 'inherit',
-        timeout: 30000
-      }
-    );
+    if (!profileExists) {
+      // Store the API token in wk CLI
+      console.log('🔐 Storing API token in wk CLI...\n');
+      execSync(
+        `wk auth login --api-token ${apiToken} --name ${profileName} --endpoint ${endpoint}`,
+        {
+          stdio: 'inherit',
+          timeout: 30000
+        }
+      );
+
+      console.log('\n✅ New profile created!\n');
+    }
+
+    // Verify setup by checking auth status
+    console.log('✨ Verifying profile setup...\n');
+    const authStatus = execSync(`wk auth status --profile ${profileName}`, {
+      encoding: 'utf-8',
+      stdio: 'pipe'
+    });
+    console.log(authStatus);
 
     console.log('\n✅ Profile setup complete!\n');
     console.log('📋 Next Steps:\n');
-    console.log(`1. Verify profile was created:`);
-    console.log(`   $ wk auth list\n`);
-    console.log(`2. Discover your projects:`);
+    console.log(`1. Discover your projects:`);
     console.log(`   $ npm run discover:projects\n`);
-    console.log(`3. Hydrate projects to Git:`);
+    console.log(`2. Hydrate projects to Git (interactive):`);
     console.log(`   $ npm run hydrate:interactive\n`);
+    console.log(`3. Or hydrate specific projects:`);
+    console.log(`   $ npm run hydrate:projects -- "Project Name 1" "Project Name 2"\n`);
+    console.log(`4. Commit to Git:`);
+    console.log(`   $ git add recipes/`);
+    console.log(`   $ git commit -m "Initial hydration of recipes"`);
+    console.log(`   $ git push\n`);
 
     return true;
 
@@ -76,7 +94,8 @@ function setupWkProfile() {
     console.error('\n💡 Troubleshooting:\n');
     console.error('   1. Verify wk CLI is installed: which wk');
     console.error('   2. Check .env file has WORKATO_API_TOKEN');
-    console.error('   3. Verify API token is valid (from Workato workspace settings)');
+    console.error('   3. Verify API token is valid (from Workato workspace admin settings)');
+    console.error('   4. Try manually: wk auth login --api-token <YOUR_TOKEN>\n');
     process.exit(1);
   }
 }
