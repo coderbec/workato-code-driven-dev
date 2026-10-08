@@ -1,0 +1,32 @@
+{
+  "name": "workato-code-driven-dev",
+  "version": "1.0.0",
+  "description": "Code-driven Workato development with MCP, Terraform, and Azure integration",
+  "main": "index.js",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "lint": "npx @workato/recipe-linter recipes/**/*.json --config linter-config.json",
+    "lint:fix": "npm run lint -- --fix",
+    "wk:pull": "wk pull recipes/ --workspace ${WORKATO_WORKSPACE_ID}",
+    "wk:push": "wk push recipes/ --workspace ${WORKATO_WORKSPACE_ID}",
+    "wk:status": "wk status recipes/",
+    "wk:diff": "wk diff recipes/",
+    "wk:auth": "wk auth login --api-token ${WORKATO_API_TOKEN}",
+    "terraform:init": "terraform -chdir=terraform init",
+    "terraform:plan": "terraform -chdir=terraform plan -var-file='environments/dev.tfvars'",
+    "terraform:apply": "terraform -chdir=terraform apply -var-file='environments/dev.tfvars'",
+    "terraform:destroy": "terraform -chdir=terraform destroy -var-file='environments/dev.tfvars'",
+    "azure:login": "az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}",
+    "setup:db": "bash scripts/setup-db-connection.sh ${ENVIRONMENT}"
+  },
+  "dependencies": {
+    "@workato/recipe-linter": "latest",
+    "mcp-remote": "latest"
+  },
+  "devDependencies": {
+    "@workato/wk-cli": "latest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

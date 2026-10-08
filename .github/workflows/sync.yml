@@ -1,0 +1,62 @@
+name: Sync Recipes (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      direction:
+        description: 'Sync direction'
+        required: true
+        default: 'pull'
+        type: choice
+        options:
+          - pull
+          - push
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Configure Git
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+      
+      - name: Pull recipes from Workato
+        if: github.event.inputs.direction == 'pull'
+        env:
+          WORKATO_API_TOKEN: ${{ secrets.WORKATO_API_TOKEN }}
+          WORKATO_WORKSPACE_ID: ${{ secrets.WORKATO_WORKSPACE_ID }}
+        run: |
+          npm run wk:pull
+          
+          if git diff-index --quiet HEAD --; then
+            echo "✅ No changes to commit"
+          else
+            git add recipes/
+            git commit -m "chore: sync recipes from Workato [skip ci]"
+            git push
+            echo "✅ Recipes synced and pushed"
+          fi
+      
+      - name: Push recipes to Workato
+        if: github.event.inputs.direction == 'push'
+        env:
+          WORKATO_API_TOKEN: ${{ secrets.WORKATO_API_TOKEN }}
+          WORKATO_WORKSPACE_ID: ${{ secrets.WORKATO_WORKSPACE_ID }}
+        run: |
+          npm run wk:push
+          echo "✅ Recipes pushed to Workato"

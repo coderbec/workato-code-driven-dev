@@ -1,0 +1,30 @@
+{
+  "name": "TODO_change_recipe_name",
+  "description": "TODO_change_recipe_description",
+  "trigger": {
+    "app": "scheduler",
+    "event": "interval",
+    "config": {
+      "interval_unit": "hours",
+      "interval_value": 1
+    }
+  },
+  "actions": [
+    {
+      "name": "TODO_change_action_name",
+      "app": "TODO_change_app_name",
+      "action": "TODO_change_action_type",
+      "config": {
+        "TODO": "Add your action configuration here"
+      }
+    }
+  ],
+  "error_handler": {
+    "app": "slack",
+    "action": "post_message",
+    "config": {
+      "channel": "#integration-errors",
+      "message": "Recipe failed: {{error_message}}"
+    }
+  }
+}

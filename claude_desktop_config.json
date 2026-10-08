@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "workato-developer-api": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://app.workato.com/mcp",
+        "--header",
+        "Authorization: Bearer ${WORKATO_API_TOKEN}"
+      ]
+    },
+    "workato-airo": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://app.workato.com/mcp/airo",
+        "--header",
+        "Authorization: Bearer ${AIRO_API_TOKEN}"
+      ]
+    }
+  }
+}

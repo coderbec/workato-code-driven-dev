@@ -1,0 +1,30 @@
+{
+  "naming": {
+    "enable": true,
+    "pattern": "^[a-z_][a-z0-9_]*$",
+    "description": "Recipe names must be lowercase with underscores"
+  },
+  "errorHandling": {
+    "enable": true,
+    "required": true,
+    "description": "All recipes must have error handling"
+  },
+  "secrets": {
+    "enable": true,
+    "forbiddenPatterns": [
+      "password",
+      "secret",
+      "token",
+      "api_key"
+    ],
+    "description": "No hardcoded secrets allowed"
+  },
+  "description": {
+    "enable": true,
+    "minLength": 10,
+    "required": true
+  },
+  "comments": {
+    "enable": false
+  }
+}

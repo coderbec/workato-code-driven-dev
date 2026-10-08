@@ -1,0 +1,56 @@
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+.env*.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+!terraform/*.tfvars.example
+
+# Build outputs
+build/
+dist/
+*.zip
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Cache
+.cache/
+.vscode-test/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Workato
+.workato/auth
+recipes/.wk_cache
+
+# Azure
+.azure/
+
+# Generated files
+generated/
+__pycache__/
+*.pyc

@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "workato-developer-api": {
+      "url": "https://app.workato.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${WORKATO_API_TOKEN}"
+      },
+      "description": "Workato Developer API MCP - Workspace management (recipes, connections, jobs, genies)"
+    },
+    "workato-airo": {
+      "url": "https://app.workato.com/mcp/airo",
+      "headers": {
+        "Authorization": "Bearer ${AIRO_API_TOKEN}"
+      },
+      "description": "AIRO MCP - Custom connector building from natural language"
+    }
+  }
+}

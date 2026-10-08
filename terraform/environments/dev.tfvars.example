@@ -1,0 +1,13 @@
+# Development environment configuration
+# Copy to dev.tfvars and fill in your values
+
+project_name            = "workato-cdd"
+environment             = "dev"
+azure_location          = "eastus"
+azure_subscription_id   = "your_subscription_id"
+azure_tenant_id         = "your_tenant_id"
+azure_client_id         = "your_client_id"
+azure_client_secret     = "your_client_secret"
+sql_admin_username      = "sqladmin"
+workato_ip_start        = "1.2.3.4"
+workato_ip_end          = "1.2.3.10"
