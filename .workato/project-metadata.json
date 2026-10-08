@@ -1,13 +1,13 @@
 {
-  "discoveredAt": "2026-10-08T22:25:57.879Z",
+  "discoveredAt": "2026-10-08T22:31:07.111Z",
   "totalProjects": 3,
   "projects": [
     {
       "name": "Email Conversion",
       "id": 63743,
-      "recipes": "—",
-      "lastModified": "Unknown",
-      "status": "⚠️ Error"
+      "recipes": 1,
+      "lastModified": "5/7/2025",
+      "status": "Active"
     },
     {
       "name": "AOF Accelerator",
@@ -20,7 +20,7 @@
       "name": "CM10 File Archiving",
       "id": 24449,
       "recipes": 6,
-      "lastModified": "2d ago",
+      "lastModified": "3d ago",
       "status": "Active"
     }
   ]

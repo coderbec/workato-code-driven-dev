@@ -27,12 +27,15 @@ function prompt(question) {
 }
 
 async function setupWkProfile() {
-  let profileName = process.env.WORKATO_PROFILE || 'workato-dev';
-  let apiToken = process.env.WORKATO_API_TOKEN;
+  const apiToken = process.env.WORKATO_API_TOKEN;
   const endpoint = process.env.WORKATO_API_ENDPOINT || 'https://app.au.workato.com';
+  
+  // For customers: profile name should be custom
+  // Derive from workspace or use default
+  let profileName = process.env.WORKATO_PROFILE || 'workato-dev';
 
-  // Check if API token is a placeholder or empty
-  const isPlaceholder = !apiToken || 
+  // Check if API token is missing or a placeholder
+  const isInvalid = !apiToken || 
     apiToken === 'WORKATO_DEV_ANZ_PRESALES' || 
     apiToken.startsWith('${') ||
     apiToken.toLowerCase().includes('placeholder') ||
@@ -42,24 +45,30 @@ async function setupWkProfile() {
   console.log('║        🔐 Setting up wk CLI Profile                           ║');
   console.log('╚═══════════════════════════════════════════════════════════════╝\n');
 
-  if (isPlaceholder) {
-    console.log('📋 No valid API token found in .env file\n');
-    console.log('Getting your API token...\n');
-    
-    // Ask for profile name
-    profileName = await prompt('Profile name (default: workato-dev): ');
-    if (!profileName.trim()) {
-      profileName = 'workato-dev';
-    }
-    
-    // Ask for API token
-    apiToken = await prompt('Workato API Token (get from Workspace > Admin > API clients): ');
-    
-    if (!apiToken.trim()) {
-      console.error('\n❌ Error: API token is required');
-      rl.close();
-      process.exit(1);
-    }
+  if (isInvalid) {
+    console.error('❌ Error: WORKATO_API_TOKEN in .env is not configured\n');
+    console.error('📋 Setup Instructions:\n');
+    console.error('1. Get your API token from Workato:');
+    console.error('   • Go to Workspace Admin → Settings → API Clients');
+    console.error('   • Create a new API client or copy existing token\n');
+    console.error('2. Update your .env file:');
+    console.error('   WORKATO_API_TOKEN=<your_actual_token_here>\n');
+    console.error('3. Re-run setup:');
+    console.error('   npm run setup:wk-profile\n');
+    rl.close();
+    process.exit(1);
+  }
+
+  // Ask for custom profile name (optional)
+  console.log('📋 Configuration:\n');
+  console.log(`Current settings from .env:`);
+  console.log(`  API Token: ${apiToken.substring(0, 15)}...${apiToken.substring(apiToken.length - 5)}`);
+  console.log(`  Endpoint: ${endpoint}`);
+  console.log(`  Profile Name: ${profileName}\n`);
+  
+  const customProfile = await prompt('Enter custom profile name (press Enter to use default): ');
+  if (customProfile.trim()) {
+    profileName = customProfile.trim();
   }
 
   console.log(`📋 Configuration:`);
@@ -106,14 +115,13 @@ async function setupWkProfile() {
     });
     console.log(authStatus);
 
-    // Update .env if token was provided interactively
-    if (isPlaceholder && apiToken) {
-      console.log('\n💾 Updating .env file with your configuration...\n');
+    // Update .env if profile name was changed
+    if (profileName !== process.env.WORKATO_PROFILE) {
+      console.log('\n💾 Updating .env file with new profile name...\n');
       let envContent = fs.readFileSync(path.join(process.cwd(), '.env'), 'utf-8');
       envContent = envContent.replace(/WORKATO_PROFILE=.*/, `WORKATO_PROFILE=${profileName}`);
-      envContent = envContent.replace(/WORKATO_API_TOKEN=.*/, `WORKATO_API_TOKEN=${apiToken}`);
       fs.writeFileSync(path.join(process.cwd(), '.env'), envContent);
-      console.log('✅ .env updated with new profile name and token\n');
+      console.log('✅ .env updated\n');
     }
 
     console.log('✅ Profile setup complete!\n');
