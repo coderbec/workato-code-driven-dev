@@ -299,6 +299,104 @@ workato-code-driven-dev/
 
 ---
 
+## ⚡ Available Skills
+
+This project includes specialized skills for Claude Desktop, OpenCode, and Cursor that automate common Workato tasks.
+
+### 1. **Workato Project Cataloguer**
+**What it does**: Discover all projects in your workspace and selectively hydrate (download) them to Git.
+
+**Use cases**:
+- First-time setup: "Show me all my projects" → Lists all projects with recipe counts and activity status
+- Selective hydration: "Hydrate Data Sync and Customer API to Git" → Download only the projects you choose
+- Incremental additions: "What projects haven't I hydrated yet?" → See remaining projects available
+
+**Key features**:
+- ✅ Lists all projects with metadata (recipe count, last modified date, active/inactive status)
+- ✅ Selective hydration (don't download everything at once)
+- ✅ Incremental workflow (add more projects later without re-syncing existing ones)
+- ✅ Uses NEW wk CLI profile per customer (no default profiles shared)
+- ✅ Saves profile name to .env for reproducibility
+
+**Location**: `.opencode/skills/workato-project-cataloguer/`
+
+---
+
+### 2. **Workato CLI Orchestrator**
+**What it does**: Sync recipes between Git and Workato, check differences, and deploy changes.
+
+**Use cases**:
+- Pull recipes: "Pull all recipes from Workato" → Downloads recipes to local Git
+- Push changes: "Push recipe changes to Workato" → Deploys modified recipes
+- Check differences: "Show me the differences between Git and Workato" → Compare versions before syncing
+
+**Key features**:
+- ✅ Bi-directional sync (pull from Workato, push to Git)
+- ✅ Diff comparison (identify conflicts before pushing)
+- ✅ Status reporting (shows what changed and what's pending)
+- ✅ Validation (checks syntax and standards before deployment)
+
+**Location**: `.opencode/skills/workato-cli-orchestrator/`
+
+---
+
+### 3. **Workato Teams Bot Setup** ⭐ NEW
+**What it does**: Set up a Microsoft Teams Enterprise Workbot with Infrastructure as Code (Terraform or Azure CLI).
+
+**Use cases**:
+- Automate bot creation: "Set up a Teams bot for HR" → Guided setup with all configuration options
+- Generate Terraform: Choose Terraform option → Production-ready Infrastructure as Code
+- Generate scripts: Choose Azure CLI option → Step-by-step bash scripts with manual steps documented
+- Comprehensive guides: Auto-generated setup checklists for manual portal configuration
+
+**Key features**:
+- ✅ Guided interactive prompts (5 phases, all required data collected)
+- ✅ Terraform Infrastructure as Code (full Azure AD app registration automation)
+- ✅ Azure CLI scripting (transparent, step-by-step shell commands)
+- ✅ Comprehensive setup checklists (manual steps for Workato, Teams, Azure portals)
+- ✅ Security best practices (secrets handling, expiration tracking, rotation guidance)
+- ✅ All Workato data centers supported (US, EU, JP, SG, AU, IL, CN, KR, UK)
+- ✅ Input validation (URLs, UUIDs, dates with helpful error messages)
+- ✅ Troubleshooting guides (common issues with solutions)
+
+**Deployment options**:
+1. **Terraform** (Recommended) — Full Infrastructure as Code, version controllable, repeatable
+2. **Azure CLI** (Manual) — Step-by-step bash script, transparent, easy to modify
+3. **Manual** (Checklist) — Follow guided checklist, maximum control, best for learning
+
+**Generated outputs**:
+- `teams-bot-terraform/` — Terraform modules (main.tf, variables.tf, outputs.tf, tfvars)
+- `teams-bot-setup.sh` — Bash script for Azure CLI workflow
+- `setup-checklist.md` — Step-by-step verification guide for Workato, Teams, and Azure portals
+- `teams-bot-config.json` — Configuration reference (no secrets)
+
+**Location**: `.opencode/skills/workato-teams-bot-setup/`
+
+**Documentation**: 
+- Main skill: `.opencode/skills/workato-teams-bot-setup/SKILL.md`
+- Claude instructions: `.opencode/skills/workato-teams-bot-setup/CLAUDE.md`
+- Quick start: `.opencode/skills/workato-teams-bot-setup/references/quick-start.md`
+- Terraform guide: `.opencode/skills/workato-teams-bot-setup/references/terraform-guide.md`
+- Azure CLI guide: `.opencode/skills/workato-teams-bot-setup/references/azure-cli-guide.md`
+
+---
+
+### How to Use These Skills
+
+**In Claude Desktop, OpenCode, or Cursor**:
+Simply ask your AI client naturally:
+```
+"I'm setting up for the first time, show me all projects"
+"Hydrate Data Sync and Customer API to Git"
+"Set up a Teams bot for HR"
+"Show me the differences between Git and Workato"
+"Push recipe changes to Workato"
+```
+
+The AI will automatically load the appropriate skill and guide you through the workflow.
+
+---
+
 ## 🔐 Security
 
 ### Header Authentication
