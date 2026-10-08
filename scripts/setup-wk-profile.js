@@ -27,18 +27,13 @@ function prompt(question) {
 }
 
 async function setupWkProfile() {
-  let apiToken = process.env.WORKATO_API_TOKEN;
-  const endpoint = process.env.WORKATO_API_ENDPOINT || 'https://app.au.workato.com';
+  // CRITICAL: First check if token exists in shell environment directly
+  // This is for customers who have their token in .zshrc or similar
+  let apiToken = process.env.WORKATO_DEV_ANZ_PRESALES || 
+                 process.env.WORKATO_API_TOKEN ||
+                 process.env.WORKATO_TOKEN;
 
-  // Handle variable references like ${WORKATO_DEV_ANZ_PRESALES}
-  if (apiToken && apiToken.startsWith('${') && apiToken.endsWith('}')) {
-    const varName = apiToken.slice(2, -1);
-    const resolvedToken = process.env[varName];
-    if (resolvedToken) {
-      apiToken = resolvedToken;
-      console.log(`📌 Resolved \${${varName}} to actual token\n`);
-    }
-  }
+  const endpoint = process.env.WORKATO_API_ENDPOINT || 'https://app.au.workato.com';
   
   console.log('\n╔═══════════════════════════════════════════════════════════════╗');
   console.log('║        🔐 Setting up NEW wk CLI Profile from .env Token      ║');
