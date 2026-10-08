@@ -5,8 +5,12 @@
   "main": "index.js",
   "scripts": {
     "setup": "node scripts/setup.js",
+    "setup:wk-profile": "node scripts/setup-wk-profile.js",
     "lint": "echo 'Linting recipes... (recipe-linter not available in npm registry)'",
     "lint:fix": "echo 'Auto-fixing recipes... (recipe-linter not available in npm registry)'",
+    "discover:projects": "node scripts/discover-projects.js",
+    "hydrate:interactive": "node scripts/hydrate-projects-interactive.js",
+    "hydrate:projects": "node scripts/hydrate-projects.js",
     "wk:pull": "wk pull recipes/ --workspace ${WORKATO_WORKSPACE_ID}",
     "wk:push": "wk push recipes/ --workspace ${WORKATO_WORKSPACE_ID}",
     "wk:status": "wk status recipes/",
@@ -19,7 +23,9 @@
     "azure:login": "az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}",
     "setup:db": "bash scripts/setup-db-connection.sh ${ENVIRONMENT}"
   },
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^16.0.0"
+  },
   "devDependencies": {},
   "engines": {
     "node": ">=18.0.0"

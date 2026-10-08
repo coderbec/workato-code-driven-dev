@@ -37,21 +37,36 @@ User can commit and continue with selective hydration
 ```
 
 **Commands for Initial Setup**:
-```
-Cataloguer: "I'm doing initial setup, show me all projects"
-→ Returns full list with recipe counts and status
 
-Cataloguer: "Hydrate [project names] to Git"
-→ Uses wk CLI to pull full recipes for selected projects only
-→ Saves to recipes/ directory
-→ Ready to commit to Git
+**Option 1: Manual discovery and hydration**
+```bash
+# Step 1: Discover all projects
+npm run discover:projects
 
-Cataloguer: "I want selective hydration, help me choose"
-→ Shows projects with metadata
-→ Asks which to hydrate
-→ Executes hydration workflow
-→ Provides next steps
+# Step 2: Hydrate specific projects
+npm run hydrate:projects -- "Data Sync" "Customer API"
+
+# Step 3: Commit to Git
+git add recipes/
+git commit -m "Initial hydration: Data Sync & Customer API"
+git push
 ```
+
+**Option 2: Interactive guided workflow (Recommended)**
+```bash
+# Step 1: Discover projects and interactively select which to hydrate
+npm run hydrate:interactive
+
+# Step 2: Commit to Git
+git add recipes/
+git commit -m "Initial hydration"
+git push
+```
+
+**What each command does**:
+- `npm run discover:projects` → Shows full list of projects with recipe counts and status
+- `npm run hydrate:projects -- "Name1" "Name2"` → Pulls specific projects only, saves to Git
+- `npm run hydrate:interactive` → Guided workflow with interactive project selection
 
 ### List All Projects
 ```
@@ -177,85 +192,241 @@ Cataloguer: "Export inventory"
 
 ## Technical Details
 
-**MCP Server**: `workato-developer-api` (for discovery/cataloging)
+### Implementation
 
-**CLI Integration**: Coordinates with `wk CLI` for hydration via CLI Orchestrator
+This skill is implemented through three Node.js scripts that wrap the `wk CLI`:
 
-**API Calls**: 
-- `GET /api/recipes` - Full catalog
-- `GET /api/projects` - Project structure
-- Metadata for project-level analysis
+#### 1. Project Discovery: `scripts/discover-projects.js`
+**What it does**:
+- Runs `wk folders list --projects --json` to get all projects
+- For each project, runs `wk recipes list --folder <ID> --json` to count recipes
+- Gathers metadata (last modified, active/inactive status)
+- Formats output as human-readable table
+- Saves metadata to `.workato/project-metadata.json` for programmatic use
 
-**Requires**: 
-- WORKATO_API_TOKEN with read access
-- wk CLI installed and authenticated (for hydration)
+**How to use**:
+```bash
+npm run discover:projects
+```
 
-**Output formats**:
+**Example output**:
+```
+╔═══════════════════════════════════════════════════════════════╗
+║             📁 Projects in Your Workspace                     ║
+╚═══════════════════════════════════════════════════════════════╝
+
+Project                | Recipes | Last Modified    | Status
+─────────────────────────────────────────────────────────────
+Data Sync             |   24    | 2 days ago       | Active
+Customer API          |   18    | 1 week ago       | Active
+Internal Tools        |    9    | 1 month ago      | Inactive
+Experiments           |    3    | 3 months ago     | Inactive
+```
+
+#### 2. Selective Hydration: `scripts/hydrate-projects.js`
+**What it does**:
+- Accepts project names as command-line arguments
+- Validates projects exist against discovered list
+- For each project, runs `wk pull --folder <ID> --force`
+- Downloads recipes to `recipes/[project-name]/`
+- Shows progress and summary
+
+**How to use**:
+```bash
+npm run hydrate:projects -- "Project 1" "Project 2"
+```
+
+**Example**:
+```bash
+npm run hydrate:projects -- "Data Sync" "Customer API"
+```
+
+#### 3. Interactive Selection: `scripts/hydrate-projects-interactive.js`
+**What it does**:
+- Shows all discovered projects with metadata
+- Lets user select which projects to hydrate using arrow keys
+- Confirms selection before proceeding
+- Performs hydration
+- Shows summary
+
+**How to use**:
+```bash
+npm run hydrate:interactive
+```
+
+**Interactive workflow**:
+```
+📁 Available Projects:
+
+   1. Data Sync
+      🟢 Active | 24 recipes | Last modified: 2 days ago
+   
+   2. Customer API
+      🟢 Active | 18 recipes | Last modified: 1 week ago
+   
+   3. Internal Tools
+      ⚪ Inactive | 9 recipes | Last modified: 1 month ago
+
+Enter project numbers to hydrate (comma-separated, e.g., "1,3,5"): 1,2
+```
+
+### MCP Server (Future)
+**MCP Server**: `workato-developer-api` (for future direct AI integration)
+
+**CLI Integration**: Currently uses `wk CLI` commands through Node.js script wrappers
+
+### API Calls
+- `GET /api/projects` (via `wk folders list`)
+- `GET /api/recipes` (via `wk recipes list`)
+- `POST /api/pull` (via `wk pull`)
+
+### Requirements
+- Node.js 18+ (already installed)
+- `wk CLI` installed globally (`/opt/homebrew/bin/wk`)
+- `WORKATO_API_TOKEN` configured in `.env`
+- `WORKATO_WORKSPACE_ID` configured in `.env`
+
+### Output formats
 - Console (human-readable project lists)
-- JSON (programmatic inventory)
-- CSV (spreadsheet-friendly)
-- Markdown (documentation)
+- JSON (`.workato/project-metadata.json`)
 - Git repository (after hydration)
 
 ## Example Workflow: First-Time Setup
 
-```
-Developer: "I'm setting up for the first time"
-↓
-Cataloguer: "I'll help you discover and hydrate your workspace"
-↓
-Shows all projects:
-  1. Data Sync (24 recipes) - Last modified 2 days ago
-  2. Customer API (18 recipes) - Last modified 1 week ago
-  3. Internal Tools (9 recipes) - Last modified 1 month ago
-  4. Experiments (3 recipes) - Last modified 3 months ago
-  Total: 54 recipes across 4 projects
-↓
-Developer: "Hydrate Data Sync and Customer API"
-↓
-Cataloguer:
-  - Validates projects exist
-  - Confirms 42 total recipes will be hydrated
-  - Pulls via wk CLI (Data Sync + Customer API)
-  - Saves to recipes/ directory
-  - Shows summary:
-    ✅ Data Sync: 24 recipes (OK)
-    ✅ Customer API: 18 recipes (OK)
-    
-    Not hydrated (available on request):
-    ⚠️ Internal Tools: 9 recipes
-    ⚠️ Experiments: 3 recipes
-↓
-Developer: "Commit these changes"
-↓
-git add recipes/
-git commit -m "Initial hydration: Data Sync & Customer API"
-git push
-↓
+### Manual Approach
+```bash
+# Step 1: Discover all projects
+$ npm run discover:projects
+
+📊 Gathering project metadata...
+
+📁 Projects in Your Workspace:
+
+Project          | Recipes | Last Modified    | Status
+─────────────────────────────────────────────────────
+Data Sync        |   24    | 2 days ago       | Active
+Customer API     |   18    | 1 week ago       | Active
+Internal Tools   |    9    | 1 month ago      | Inactive
+Experiments      |    3    | 3 months ago     | Inactive
+
+📋 Next Steps:
+1. Review the projects listed above
+2. Choose which projects to hydrate
+3. Run: npm run hydrate:projects -- "Data Sync" "Customer API"
+
+# Step 2: Hydrate selected projects
+$ npm run hydrate:projects -- "Data Sync" "Customer API"
+
+📥 Hydrating: Data Sync
+   └─ 24 recipes hydrated
+
+📥 Hydrating: Customer API
+   └─ 18 recipes hydrated
+
+📊 Hydration Summary:
+
+Project      | Recipes | Status
+──────────────────────────────
+Data Sync    |   24    | ✅ Success
+Customer API |   18    | ✅ Success
+
+✨ Next Steps:
+1. Review the downloaded recipes in ./recipes/
+2. Commit your changes:
+   $ git add recipes/
+   $ git commit -m "chore: hydrate projects"
+3. Start developing with:
+   $ npm run dev
+
+# Step 3: Commit to Git
+$ git add recipes/
+$ git commit -m "Initial hydration: Data Sync & Customer API"
+$ git push
+
 Result: 42 recipes now version-controlled, others remain in Workato
-↓
-Developer: "Show me what projects I haven't hydrated yet"
-↓
-Cataloguer lists remaining projects, ready for future hydration
+```
+
+### Interactive Approach (Recommended)
+```bash
+# One command for full guided workflow
+$ npm run hydrate:interactive
+
+╔═══════════════════════════════════════════════════════════════╗
+║        🚀 Interactive Project Hydration                       ║
+╚═══════════════════════════════════════════════════════════════╝
+
+🔍 Discovering projects...
+
+📁 Available Projects:
+
+   1. Data Sync
+      🟢 Active | 24 recipes | Last modified: 2 days ago
+   
+   2. Customer API
+      🟢 Active | 18 recipes | Last modified: 1 week ago
+   
+   3. Internal Tools
+      ⚪ Inactive | 9 recipes | Last modified: 1 month ago
+   
+   4. Experiments
+      ⚪ Inactive | 3 recipes | Last modified: 3 months ago
+
+Enter project numbers to hydrate (comma-separated, e.g., "1,3,5"): 1,2
+
+📋 You selected:
+
+   1. Data Sync
+   2. Customer API
+
+Proceed with hydration? (yes/no): yes
+
+🔄 Starting hydration...
+
+📥 Hydrating: Data Sync...
+   └─ 24 recipes hydrated
+
+📥 Hydrating: Customer API...
+   └─ 18 recipes hydrated
+
+📊 Hydration Summary:
+
+Project      | Recipes | Status
+──────────────────────────────
+Data Sync    |   24    | ✅ Success
+Customer API |   18    | ✅ Success
+
+✨ Next Steps:
+1. Review the downloaded recipes in ./recipes/
+2. Commit your changes:
+   $ git add recipes/
+   $ git commit -m "chore: hydrate projects"
+3. Start developing with:
+   $ npm run dev
 ```
 
 ## Example Workflow: Ongoing Hydration
 
-```
-Developer (2 weeks later): "I want to hydrate Internal Tools now"
-↓
-Cataloguer: "Hydrate Internal Tools to Git"
-↓
-Pulls 9 recipes for Internal Tools project
-↓
-Saves to recipes/internal-tools/
-↓
-Developer: "Commit and push"
-↓
-git add recipes/
-git commit -m "Hydrate: Internal Tools"
-git push
-↓
+```bash
+# 2 weeks later: Hydrate additional projects
+
+# Option 1: Add more projects interactively
+$ npm run hydrate:interactive
+(User selects "Internal Tools")
+
+📥 Hydrating: Internal Tools...
+   └─ 9 recipes hydrated
+
+# Option 2: Add specific projects directly
+$ npm run hydrate:projects -- "Internal Tools"
+
+📥 Hydrating: Internal Tools
+   └─ 9 recipes hydrated
+
+# Commit to Git
+$ git add recipes/
+$ git commit -m "Hydrate: Internal Tools"
+$ git push
+
 Result: 51 recipes now in Git (9 newly added)
 ```
 
