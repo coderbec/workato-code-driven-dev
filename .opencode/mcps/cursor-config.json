@@ -1,21 +1,16 @@
 {
-  "comment": "Cursor IDE MCP configuration - use in your Cursor workspace settings",
+  "comment": "Cursor MCP config. Copy to .cursor/mcp.json in your workspace (or ~/.cursor/mcp.json). Needs WORKATO_API_TOKEN in the environment Cursor starts with (export it in your shell profile and launch with `cursor .`). URLs follow your data centre: run `npm run setup:data-center`.",
   "mcpServers": {
     "workato-developer-api": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["./scripts/mcp-wrapper.js", "workato-developer-api"],
-      "env": {
-        "WORKATO_API_TOKEN": "${WORKATO_API_TOKEN}",
-        "WORKATO_WORKSPACE_ID": "${WORKATO_WORKSPACE_ID}"
+      "url": "https://app.workato.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:WORKATO_API_TOKEN}"
       }
     },
     "workato-airo": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["./scripts/mcp-wrapper.js", "workato-airo"],
-      "env": {
-        "AIRO_API_TOKEN": "${AIRO_API_TOKEN}"
+      "url": "https://app.workato.com/airo_mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:WORKATO_API_TOKEN}"
       }
     }
   }

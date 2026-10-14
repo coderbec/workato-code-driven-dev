@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { configureDataCenter } = require('./configure-data-center');
 
 const colors = {
   reset: '\x1b[0m',
@@ -47,10 +48,13 @@ const checkFile = (filePath, name) => {
   }
 };
 
-const main = () => {
+const main = async () => {
   console.log(`\n${colors.cyan}═══════════════════════════════════════════════════════════${colors.reset}`);
   console.log(`${colors.cyan}   Workato Code-Driven Development - Project Setup${colors.reset}`);
   console.log(`${colors.cyan}═══════════════════════════════════════════════════════════${colors.reset}\n`);
+
+  log.step('Choosing your Workato data centre...');
+  await configureDataCenter({ askToKeep: true });
 
   log.step('Checking system dependencies...\n');
   
@@ -74,7 +78,7 @@ const main = () => {
 
   const files = {
     '.env': '.env (secrets)',
-    'mcp.json': 'mcp.json (MCP configuration)',
+    '.mcp.json': '.mcp.json (MCP configuration)',
     'claude_desktop_config.json': 'claude_desktop_config.json (Claude Desktop config)',
     'linter-config.json': 'linter-config.json (Recipe Linter config)'
   };
@@ -88,8 +92,10 @@ const main = () => {
 
   console.log(`
 1. ${colors.yellow}Set up environment variables:${colors.reset}
-   cp .env.example .env
-   # Edit .env with your actual Workato API token and Azure credentials
+   cp .env.example .env   # (skip if .env already exists)
+   # Add your WORKATO_API_TOKEN (must be a token from the data centre you just chose)
+   # and Azure credentials. WORKATO_DATA_CENTER / WORKATO_API_ENDPOINT are already set.
+   # Change data centre later with: npm run setup:data-center
 
 2. ${colors.yellow}Install dependencies:${colors.reset}
    npm install
@@ -123,4 +129,7 @@ const main = () => {
   console.log();
 };
 
-main();
+main().catch((err) => {
+  log.error(err.message);
+  process.exit(1);
+});

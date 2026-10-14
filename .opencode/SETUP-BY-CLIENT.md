@@ -91,17 +91,23 @@ Your config should look like:
         "mcp-remote",
         "https://app.workato.com/mcp",
         "--header",
-        "Authorization: Bearer ${WORKATO_API_TOKEN}"
-      ]
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+      }
     },
     "workato-airo": {
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://app.workato.com/mcp/airo",
+        "https://app.workato.com/airo_mcp",
         "--header",
-        "Authorization: Bearer ${AIRO_API_TOKEN}"
-      ]
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+      }
     }
     // ... your other MCP servers ...
   }
@@ -187,17 +193,23 @@ In your Cursor workspace settings (`.cursor/settings.json` or via UI):
           "mcp-remote",
           "https://app.workato.com/mcp",
           "--header",
-          "Authorization: Bearer ${WORKATO_API_TOKEN}"
-        ]
+          "Authorization:${AUTH_HEADER}"
+        ],
+        "env": {
+          "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+        }
       },
       "workato-airo": {
         "command": "npx",
         "args": [
           "mcp-remote",
-          "https://app.workato.com/mcp/airo",
+          "https://app.workato.com/airo_mcp",
           "--header",
-          "Authorization: Bearer ${AIRO_API_TOKEN}"
-        ]
+          "Authorization:${AUTH_HEADER}"
+        ],
+        "env": {
+          "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+        }
       }
     }
   }
@@ -253,18 +265,24 @@ Use `.opencode/mcps/generic-mcp-client-config.json` as a template:
         "mcp-remote",
         "https://app.workato.com/mcp",
         "--header",
-        "Authorization: Bearer ${WORKATO_API_TOKEN}"
-      ]
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+      }
     },
     "workato-airo": {
       "type": "stdio",
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://app.workato.com/mcp/airo",
+        "https://app.workato.com/airo_mcp",
         "--header",
-        "Authorization: Bearer ${AIRO_API_TOKEN}"
-      ]
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+      }
     }
   }
 }
@@ -344,14 +362,17 @@ echo "WORKATO_API_TOKEN=new_token" > .env
 **Solution**:
 ```bash
 # 1. Check internet connection
-ping app.workato.com
+ping app.<your-data-centre>.workato.com   # US: app.workato.com
 
 # 2. Verify token format
 # Should be: Authorization: Bearer YOUR_TOKEN
 
 # 3. Check if MCP remote server is accessible
-curl -H "Authorization: Bearer ${WORKATO_API_TOKEN}" \
-  https://app.workato.com/mcp/status
+curl -s -o /dev/null -w "%{http_code}\n" -X POST \
+  -H "Authorization: Bearer ${WORKATO_API_TOKEN}" \
+  -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"t","version":"1"}}}' \
+  https://app.workato.com/mcp   # 200 = token OK; 401 = wrong token or wrong data centre
 
 # 4. Check Workato status page
 # https://status.workato.com/

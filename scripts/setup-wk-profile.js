@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 require('dotenv').config();
+const { urlsFor, detectFromUrl } = require('./lib/data-centers');
 
 /**
  * Setup wk CLI profile using environment variables or interactive prompt
@@ -29,11 +30,11 @@ function prompt(question) {
 async function setupWkProfile() {
   // CRITICAL: First check if token exists in shell environment directly
   // This is for customers who have their token in .zshrc or similar
-  let apiToken = process.env.WORKATO_DEV_ANZ_PRESALES || 
-                 process.env.WORKATO_API_TOKEN ||
+  let apiToken = process.env.WORKATO_API_TOKEN ||
                  process.env.WORKATO_TOKEN;
 
-  const endpoint = process.env.WORKATO_API_ENDPOINT || 'https://app.au.workato.com';
+  const endpoint = process.env.WORKATO_API_ENDPOINT
+    || urlsFor(process.env.WORKATO_DATA_CENTER || 'us').apiEndpoint;
   
   console.log('\n╔═══════════════════════════════════════════════════════════════╗');
   console.log('║        🔐 Setting up NEW wk CLI Profile from .env Token      ║');
@@ -41,7 +42,7 @@ async function setupWkProfile() {
 
   // Check if API token is missing or a placeholder
   const isInvalid = !apiToken || 
-    apiToken === 'WORKATO_DEV_ANZ_PRESALES' || 
+    apiToken === 'WORKATO_API_TOKEN' || 
     apiToken.startsWith('${') ||
     apiToken.toLowerCase().includes('placeholder') ||
     apiToken.toLowerCase().includes('your_');
@@ -88,7 +89,10 @@ async function setupWkProfile() {
     
     // wk auth login requires: --token, --environment, --region, optionally --name
     const environment = 'dev';
-    const region = 'au';
+    // Region: explicit WORKATO_REGION wins, otherwise infer from the endpoint host
+    // (www.workato.com or app.workato.com -> us, app.au.workato.com -> au, app.eu.workato.com -> eu, ...)
+    const region = (process.env.WORKATO_REGION || process.env.WORKATO_DATA_CENTER
+      || detectFromUrl(endpoint) || 'us').toLowerCase();
     
     execSync(
       `wk auth login --token "${apiToken}" --environment ${environment} --region ${region} --name "${profileName}" --force --no-input`,

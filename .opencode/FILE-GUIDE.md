@@ -391,7 +391,7 @@ opencode --check-config
 | `.env.example` | Environment variable template | Root |
 | `.env` | Actual environment variables | Root (never commit) |
 | `package.json` | npm configuration | Root |
-| `mcp.json` | Legacy MCP references | Root (can be archived) |
+| `.mcp.json` | Claude Code project MCP config (uses `scripts/mcp-auth-header.sh`) | Root |
 
 ---
 

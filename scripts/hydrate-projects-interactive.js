@@ -110,6 +110,7 @@ function hydrateProjects(projectNames) {
 
     try {
       console.log(`📥 Hydrating: ${project.name}...`);
+      const profile = process.env.WORKATO_PROFILE || 'default';
 
       const projectDir = path.join('recipes', project.name.toLowerCase().replace(/\s+/g, '-'));
       
@@ -117,8 +118,20 @@ function hydrateProjects(projectNames) {
         fs.mkdirSync(projectDir, { recursive: true });
       }
 
+      // Make sure wk.toml has a sync entry for this project (existing ones are skipped)
       try {
-        const profile = process.env.WORKATO_PROFILE || 'default';
+        execSync(
+          `wk sync add --sync "${project.name}:${path.basename(projectDir)}" --no-input --profile ${profile}`,
+          {
+            cwd: path.join(process.cwd(), 'recipes'),
+            stdio: ['pipe', 'pipe', 'pipe']
+          }
+        );
+      } catch (error) {
+        throw new Error(`wk sync add failed: ${(error.stderr || error.message).toString().trim()}`);
+      }
+
+      try {
         // wk pull uses the sync entry server_path (project name)
         execSync(
           `wk pull --folder "${project.name}" --force --profile ${profile}`,
@@ -302,7 +315,7 @@ async function main() {
     if (!fs.existsSync(wkTomlPath)) {
       try {
         console.log('\n📋 Initializing wk project in recipes directory...\n');
-        const profile = process.env.WK_PROFILE || 'default';
+        const profile = process.env.WORKATO_PROFILE || process.env.WK_PROFILE || 'default';
         execSync(
           `wk init --name workato --projects-dir . --profile ${profile} --no-input`,
           {
@@ -335,9 +348,7 @@ async function main() {
     if (successCount > 0) {
       console.log('✨ Next Steps:\n');
       console.log('1. Review the downloaded recipes in ./recipes/\n');
-      console.log('2. Commit your changes:\n');
-      console.log('   $ git add recipes/\n');
-      console.log('   $ git commit -m "chore: hydrate projects"\n');
+      console.log('2. Note: ./recipes/ is gitignored local working state (not committed)\n');
       console.log('3. Start developing with:\n');
       console.log('   $ npm run dev\n');
     }

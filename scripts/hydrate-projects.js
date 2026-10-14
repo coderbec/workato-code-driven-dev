@@ -132,6 +132,21 @@ ${workspaceInfo}${syncEntries}`;
         fs.mkdirSync(projectDir, { recursive: true });
       }
 
+      // Make sure wk.toml has a sync entry for this project (wk.toml is only
+      // created once, so later projects need their entry added; existing ones are skipped)
+      try {
+        const profile = process.env.WORKATO_PROFILE || 'default';
+        execSync(
+          `wk sync add --sync "${project.name}:${projectDirName}" --no-input --profile ${profile}`,
+          {
+            cwd: recipesDir,
+            stdio: ['pipe', 'pipe', 'pipe']
+          }
+        );
+      } catch (error) {
+        throw new Error(`wk sync add failed: ${(error.stderr || error.message).toString().trim()}`);
+      }
+
       // Pull recipes for this folder using wk pull
       try {
         const profile = process.env.WORKATO_PROFILE || 'default';
@@ -206,9 +221,7 @@ ${workspaceInfo}${syncEntries}`;
   if (successCount > 0) {
     console.log('✨ Next Steps:\n');
     console.log('1. Review the downloaded recipes in ./recipes/\n');
-    console.log('2. Commit your changes:\n');
-    console.log('   $ git add recipes/\n');
-    console.log('   $ git commit -m "chore: hydrate projects"\n');
+    console.log('2. Note: ./recipes/ is gitignored local working state (not committed)\n');
     console.log('3. Start developing with:\n');
     console.log('   $ npm run dev\n');
   }
