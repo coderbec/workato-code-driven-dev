@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 require('dotenv').config();
+const { urlsFor, detectFromUrl } = require('./lib/data-centers');
 
 /**
  * Setup wk CLI profile using environment variables or interactive prompt
@@ -32,7 +33,8 @@ async function setupWkProfile() {
   let apiToken = process.env.WORKATO_API_TOKEN ||
                  process.env.WORKATO_TOKEN;
 
-  const endpoint = process.env.WORKATO_API_ENDPOINT || 'https://app.workato.com';
+  const endpoint = process.env.WORKATO_API_ENDPOINT
+    || urlsFor(process.env.WORKATO_DATA_CENTER || 'us').apiEndpoint;
   
   console.log('\n╔═══════════════════════════════════════════════════════════════╗');
   console.log('║        🔐 Setting up NEW wk CLI Profile from .env Token      ║');
@@ -88,9 +90,9 @@ async function setupWkProfile() {
     // wk auth login requires: --token, --environment, --region, optionally --name
     const environment = 'dev';
     // Region: explicit WORKATO_REGION wins, otherwise infer from the endpoint host
-    // (app.workato.com -> us, app.au.workato.com -> au, app.eu.workato.com -> eu, ...)
-    const hostMatch = new URL(endpoint).hostname.match(/^(?:app|www)\.([a-z]{2,5})\.workato\.com$/);
-    const region = (process.env.WORKATO_REGION || (hostMatch ? hostMatch[1] : 'us')).toLowerCase();
+    // (www.workato.com or app.workato.com -> us, app.au.workato.com -> au, app.eu.workato.com -> eu, ...)
+    const region = (process.env.WORKATO_REGION || process.env.WORKATO_DATA_CENTER
+      || detectFromUrl(endpoint) || 'us').toLowerCase();
     
     execSync(
       `wk auth login --token "${apiToken}" --environment ${environment} --region ${region} --name "${profileName}" --force --no-input`,

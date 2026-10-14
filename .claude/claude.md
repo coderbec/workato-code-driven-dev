@@ -46,9 +46,10 @@ This project is configured to work with Claude Desktop and Cursor via MCP (Model
 
 ## Setup Instructions
 
-### 1. Configure Environment
+### 1. Choose data centre and configure environment
 ```bash
-cp .env.example .env
+npm run setup:data-center   # asks which Workato data centre you use; sets URLs everywhere
+[ -f .env ] || cp .env.example .env
 # Edit .env with:
 # - WORKATO_API_TOKEN (from Workspace Admin > API clients)
 # - Azure credentials
@@ -69,11 +70,11 @@ Edit `~/.config/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "workato-developer-api": {
       "command": "npx",
-      "args": ["mcp-remote", "https://app.workato.com/mcp", "--header", "Authorization: Bearer YOUR_TOKEN"]
+      "args": ["mcp-remote", "https://app.workato.com/mcp", "--header", "Authorization:${AUTH_HEADER}"], "env": {"AUTH_HEADER": "Bearer YOUR_TOKEN"}
     },
     "workato-airo": {
       "command": "npx",
-      "args": ["mcp-remote", "https://app.workato.com/airo_mcp", "--header", "Authorization: Bearer YOUR_TOKEN"]
+      "args": ["mcp-remote", "https://app.workato.com/airo_mcp", "--header", "Authorization:${AUTH_HEADER}"], "env": {"AUTH_HEADER": "Bearer YOUR_TOKEN"}
     }
   }
 }
@@ -129,13 +130,14 @@ This repo is configured for several agent clients. Keep them aligned when changi
 | `.claude/` (`claude.md`, `skills/`) | Claude Code / Claude Desktop | This briefing. Project MCP config is `.mcp.json`. |
 | `.opencode/` | OpenCode (also Cursor, generic MCP clients) | `opencode.jsonc` is the main config. Skills are auto-discovered from `.opencode/skills/<name>/SKILL.md`. |
 | `.opencode/mcps/` | Claude Desktop, Cursor, generic MCP | `claude-desktop-config.json`, `cursor-config.json`, `generic-mcp-client-config.json` |
-| `claude_desktop_config.json` (repo root) | Claude Desktop | Example config; endpoints use `app.workato.com` |
+| `claude_desktop_config.json` (repo root) | Claude Desktop | Example config; endpoints follow your data centre (`npm run setup:data-center`) |
 
 Guides inside `.opencode/`: `README.md`, `SETUP-BY-CLIENT.md`, `COMPATIBILITY.md`, `FILE-GUIDE.md`, `INDEX.md`, `MIGRATION-SUMMARY.md`.
 
 Differences to be aware of:
 - OpenCode reads tokens from the shell environment (`{env:WORKATO_API_TOKEN}`). Claude Code reads the token from `.env` through `scripts/mcp-auth-header.sh` (the `headersHelper` in `.mcp.json`), so it works even when Claude Code is launched without your shell profile.
-- All configs point at the default data center: `https://app.workato.com/mcp` and `/airo_mcp`.
+- Data centre: `npm run setup` asks which one you are in (`npm run setup:data-center` to change it later). It writes `WORKATO_DATA_CENTER`, `WORKATO_REGION` and `WORKATO_API_ENDPOINT` to `.env` and rewrites the MCP URLs in every config above (`us` -> `app.workato.com`, others -> `app.<code>.workato.com`; supported: us, eu, jp, sg, au, il, kr, uk, trial). A token only works in its own data centre.
+- Claude Desktop and generic `mcp-remote` configs take the token as `AUTH_HEADER` (`Bearer <token>`) in their `env` block; Cursor uses `${env:WORKATO_API_TOKEN}`.
 - `.opencode/skills/workato-teams-bot-setup/CLAUDE.md` is a Claude-oriented briefing for that skill; it is mirrored into `.claude/skills/workato-teams-bot-setup/`.
 
 ## Workflow Examples

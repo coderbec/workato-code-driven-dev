@@ -6,8 +6,11 @@
         "mcp-remote",
         "https://app.workato.com/mcp",
         "--header",
-        "Authorization: Bearer ${WORKATO_API_TOKEN}"
-      ]
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+      }
     },
     "workato-airo": {
       "command": "npx",
@@ -15,8 +18,11 @@
         "mcp-remote",
         "https://app.workato.com/airo_mcp",
         "--header",
-        "Authorization: Bearer ${WORKATO_API_TOKEN}"
-      ]
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+      }
     }
   }
 }

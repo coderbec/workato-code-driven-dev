@@ -113,7 +113,7 @@ cp .env.example .env
 2. Click **Create New**
 3. Name: `workato-code-driven-dev`
 4. Copy the **API Token**
-5. Paste into `.env`:
+5. Paste into `.env` (run `npm run setup:data-center` first so the data centre is set; the token must come from that data centre):
 
 ```bash
 # .env
@@ -122,8 +122,8 @@ WORKATO_WORKSPACE_ID=12345  # Your workspace ID
 ```
 
 **Find Workspace ID**:
-- Go to `https://app.workato.com/dashboard`
-- Look at the URL: `app.workato.com/workspaces/12345/`
+- Log in to Workato and look at the URL (US: `www.workato.com`, others: `app.<code>.workato.com`)
+- Open the workspace dashboard; the URL contains `/workspaces/12345/`
 - Your ID is `12345`
 
 ### Get Azure Credentials (Optional, only if using Terraform)
@@ -318,8 +318,11 @@ notepad %APPDATA%\Claude\claude_desktop_config.json
         "mcp-remote",
         "https://app.workato.com/mcp",
         "--header",
-        "Authorization: Bearer YOUR_API_TOKEN_HERE"
-      ]
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+      }
     },
     "workato-airo": {
       "command": "npx",
@@ -327,8 +330,11 @@ notepad %APPDATA%\Claude\claude_desktop_config.json
         "mcp-remote",
         "https://app.workato.com/airo_mcp",
         "--header",
-        "Authorization: Bearer YOUR_API_TOKEN_HERE"
-      ]
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
+      }
     }
   }
 }

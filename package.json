@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "setup": "node scripts/setup.js",
+    "setup:data-center": "node scripts/configure-data-center.js",
     "setup:wk-profile": "node scripts/setup-wk-profile.js",
+    "test": "node --test scripts/data-centers.test.js",
     "lint": "echo 'Linting recipes... (recipe-linter not available in npm registry)'",
     "lint:fix": "echo 'Auto-fixing recipes... (recipe-linter not available in npm registry)'",
     "discover:projects": "node scripts/discover-projects.js",

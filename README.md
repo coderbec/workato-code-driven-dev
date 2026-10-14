@@ -58,9 +58,10 @@ npm install
 node scripts/setup.js
 ```
 
-#### 2️⃣ Configure Secrets
+#### 2️⃣ Choose Data Centre & Configure Secrets
+`npm run setup` asks which Workato data centre you use (us, eu, jp, sg, au, il, kr, uk, trial) and points every MCP config and `.env` at the right URLs. Change it any time with `npm run setup:data-center`.
 ```bash
-cp .env.example .env
+[ -f .env ] || cp .env.example .env
 # Edit .env with:
 # - WORKATO_API_TOKEN (Workspace Admin > API clients)
 # - WORKATO_WORKSPACE_ID (your workspace ID)

@@ -1,5 +1,5 @@
 {
-  "comment": "Generic MCP Client Configuration - works with any MCP-compatible client",
+  "comment": "Generic MCP client config (mcp-remote). Replace YOUR_WORKATO_API_TOKEN in env.AUTH_HEADER with your token; keep this file out of git once it holds a real token. URLs follow your data centre: run `npm run setup:data-center`.",
   "mcpServers": {
     "workato-developer-api": {
       "type": "stdio",
@@ -9,11 +9,10 @@
         "mcp-remote",
         "https://app.workato.com/mcp",
         "--header",
-        "Authorization: Bearer ${WORKATO_API_TOKEN}"
+        "Authorization:${AUTH_HEADER}"
       ],
       "env": {
-        "WORKATO_API_TOKEN": "${WORKATO_API_TOKEN}",
-        "WORKATO_WORKSPACE_ID": "${WORKATO_WORKSPACE_ID}"
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
       }
     },
     "workato-airo": {
@@ -24,10 +23,10 @@
         "mcp-remote",
         "https://app.workato.com/airo_mcp",
         "--header",
-        "Authorization: Bearer ${WORKATO_API_TOKEN}"
+        "Authorization:${AUTH_HEADER}"
       ],
       "env": {
-        "AIRO_API_TOKEN": "${WORKATO_API_TOKEN}"
+        "AUTH_HEADER": "Bearer YOUR_WORKATO_API_TOKEN"
       }
     }
   }
