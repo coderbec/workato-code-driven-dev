@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "setup": "node scripts/setup.js",
+    "setup:token": "node scripts/set-token.js",
     "setup:data-center": "node scripts/configure-data-center.js",
     "setup:wk-profile": "node scripts/setup-wk-profile.js",
     "test": "node --test scripts/data-centers.test.js",

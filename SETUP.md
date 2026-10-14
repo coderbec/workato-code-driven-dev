@@ -113,7 +113,7 @@ cp .env.example .env
 2. Click **Create New**
 3. Name: `workato-code-driven-dev`
 4. Copy the **API Token**
-5. Paste into `.env` (run `npm run setup:data-center` first so the data centre is set; the token must come from that data centre):
+5. Easiest: run `npm run setup:token` and paste it (hidden); it verifies the token and saves it for you. Or paste into `.env` by hand (run `npm run setup:data-center` first so the data centre is set; the token must come from that data centre):
 
 ```bash
 # .env

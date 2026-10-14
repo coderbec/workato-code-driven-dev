@@ -50,6 +50,7 @@ This project is configured to work with Codex Desktop and Cursor via MCP (Model 
 ```bash
 npm run setup:data-center   # asks which Workato data centre you use; sets URLs everywhere
 [ -f .env ] || cp .env.example .env
+npm run setup:token         # paste your token (hidden); checks it, saves to .env, refreshes the wk profile
 # Edit .env with:
 # - WORKATO_API_TOKEN (from Workspace Admin > API clients)
 # - Azure credentials
@@ -175,6 +176,7 @@ Differences to be aware of:
 - Verify WORKATO_API_TOKEN is set in environment
 
 ### "Authentication failed"
+- Change the token in one step: `npm run setup:token` (or `pbpaste | npm run setup:token -- --stdin`), then reconnect with `/mcp`
 - Verify token hasn't expired
 - Generate a new token in Workspace Admin
 - Ensure header format is: `Authorization: Bearer ${TOKEN}`

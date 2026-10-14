@@ -62,6 +62,7 @@ node scripts/setup.js
 `npm run setup` asks which Workato data centre you use (us, eu, jp, sg, au, il, kr, uk, trial) and points every MCP config and `.env` at the right URLs. Change it any time with `npm run setup:data-center`.
 ```bash
 [ -f .env ] || cp .env.example .env
+npm run setup:token   # paste your API token (hidden input); it is checked, saved to .env and the wk profile is refreshed. Re-run any time the token changes.
 # Edit .env with:
 # - WORKATO_API_TOKEN (Workspace Admin > API clients)
 # - WORKATO_WORKSPACE_ID (your workspace ID)
