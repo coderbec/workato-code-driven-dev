@@ -1,3 +1,8 @@
+---
+name: workato-cli-orchestrator
+description: Manage recipe synchronization between Git and Workato using the wk CLI (pull, push, diff, status). Use when syncing recipes between a Git repo and a Workato workspace.
+---
+
 # Workato CLI Orchestrator
 
 **Purpose**: Manage recipe synchronization between Git and Workato using wk CLI.

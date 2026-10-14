@@ -98,7 +98,7 @@ Your config should look like:
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://app.workato.com/mcp/airo",
+        "https://app.workato.com/airo_mcp",
         "--header",
         "Authorization: Bearer ${AIRO_API_TOKEN}"
       ]
@@ -194,7 +194,7 @@ In your Cursor workspace settings (`.cursor/settings.json` or via UI):
         "command": "npx",
         "args": [
           "mcp-remote",
-          "https://app.workato.com/mcp/airo",
+          "https://app.workato.com/airo_mcp",
           "--header",
           "Authorization: Bearer ${AIRO_API_TOKEN}"
         ]
@@ -261,7 +261,7 @@ Use `.opencode/mcps/generic-mcp-client-config.json` as a template:
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://app.workato.com/mcp/airo",
+        "https://app.workato.com/airo_mcp",
         "--header",
         "Authorization: Bearer ${AIRO_API_TOKEN}"
       ]

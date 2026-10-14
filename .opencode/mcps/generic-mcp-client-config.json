@@ -22,12 +22,12 @@
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://app.workato.com/mcp/airo",
+        "https://app.workato.com/airo_mcp",
         "--header",
-        "Authorization: Bearer ${AIRO_API_TOKEN}"
+        "Authorization: Bearer ${WORKATO_API_TOKEN}"
       ],
       "env": {
-        "AIRO_API_TOKEN": "${AIRO_API_TOKEN}"
+        "AIRO_API_TOKEN": "${WORKATO_API_TOKEN}"
       }
     }
   }

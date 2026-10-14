@@ -1,6 +1,13 @@
-# Workato CLI Orchestrator Skill
+---
+name: workato-cli-orchestrator
+description: Manage recipe synchronization between Git and Workato using the wk CLI (pull, push, diff, status). Use when syncing recipes between a Git repo and a Workato workspace.
+---
+
+# Workato CLI Orchestrator
 
 **Purpose**: Manage recipe synchronization between Git and Workato using wk CLI.
+
+**Skill ID**: `workato-cli-orchestrator`
 
 **When to use**:
 - Pull recipes from Workato to Git (version control)
@@ -129,7 +136,7 @@ npm run wk:status
 ```
 
 ### Environment Variables
-Requires in `.env`:
+Requires in `.env` or environment:
 ```
 WORKATO_API_TOKEN=your_token_here
 WORKATO_WORKSPACE_ID=your_workspace_id
@@ -174,6 +181,9 @@ npm run wk:auth
 
 # Check CLI version
 wk --version
+
+# Auto-fix linting issues
+npm run lint:fix
 ```
 
 ## Troubleshooting
@@ -210,6 +220,13 @@ npm run wk:status
 - ⚠️ Doesn't merge conflicting recipes automatically
 - ⚠️ Requires valid Git repository
 - ⚠️ API rate limits apply
+
+## Integration with Other Skills
+
+Works seamlessly with:
+- **Workato Project Cataloguer**: Pull recipes discovered during cataloging
+- **Standard Git workflows**: Add, commit, push operations
+- **CI/CD pipelines**: Automate push via GitHub Actions or similar
 
 ## Next Steps
 

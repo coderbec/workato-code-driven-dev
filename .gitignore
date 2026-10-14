@@ -46,6 +46,9 @@ Thumbs.db
 # Workato
 .workato/auth
 recipes/.wk_cache
+# Hydrated wk pull output (keep only the placeholder so the dir exists)
+recipes/*
+!recipes/.gitkeep
 
 # Azure
 .azure/
@@ -54,3 +57,7 @@ recipes/.wk_cache
 generated/
 __pycache__/
 *.pyc
+
+# Local backups, caches and customer/internal working files (repo is public)
+.env.bak*
+.workato/

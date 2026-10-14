@@ -15,7 +15,7 @@
       "command": "node",
       "args": ["./scripts/mcp-wrapper.js", "workato-airo"],
       "env": {
-        "AIRO_API_TOKEN": "${AIRO_API_TOKEN}"
+        "AIRO_API_TOKEN": "${WORKATO_API_TOKEN}"
       }
     }
   }

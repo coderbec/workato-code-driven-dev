@@ -5,7 +5,7 @@ set -e
 # Usage: bash scripts/setup-db-connection.sh dev
 
 ENVIRONMENT=${1:-dev}
-WK_HOME=${WK_HOME:-~/.workato}
+WK_HOME=${WK_HOME:-$HOME/.wk}
 
 echo "🔐 Setting up Azure SQL Database connection..."
 echo "Environment: $ENVIRONMENT"

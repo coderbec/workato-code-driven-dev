@@ -325,7 +325,7 @@ notepad %APPDATA%\Claude\claude_desktop_config.json
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://app.workato.com/mcp/airo",
+        "https://app.workato.com/airo_mcp",
         "--header",
         "Authorization: Bearer YOUR_API_TOKEN_HERE"
       ]
@@ -430,8 +430,8 @@ wk --version
 
 ### "Cannot authenticate"
 ```bash
-# Reset authentication
-rm ~/.workato/auth
+# Check the active profile and connectivity
+wk auth status
 
 # Re-authenticate
 npm run wk:auth

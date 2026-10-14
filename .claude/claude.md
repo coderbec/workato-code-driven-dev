@@ -6,7 +6,7 @@ This project is configured to work with Claude Desktop and Cursor via MCP (Model
 
 ### 1. Workato Developer API MCP
 - **Purpose**: Workspace management (recipes, connections, jobs, genies)
-- **Configuration**: `mcp.json` - Developer API endpoint
+- **Configuration**: `.mcp.json` - Developer API endpoint
 - **Header Auth**: `Authorization: Bearer ${WORKATO_API_TOKEN}`
 
 **Available Operations**:
@@ -27,8 +27,8 @@ This project is configured to work with Claude Desktop and Cursor via MCP (Model
 
 ### 2. AIRO MCP
 - **Purpose**: Custom connector building from natural language
-- **Configuration**: `mcp.json` - AIRO endpoint
-- **Header Auth**: `Authorization: Bearer ${AIRO_API_TOKEN}`
+- **Configuration**: `.mcp.json` - AIRO endpoint
+- **Header Auth**: `Authorization: Bearer ${WORKATO_API_TOKEN}`
 
 **Available Operations**:
 - Build custom connectors from API descriptions
@@ -73,7 +73,7 @@ Edit `~/.config/Claude/claude_desktop_config.json`:
     },
     "workato-airo": {
       "command": "npx",
-      "args": ["mcp-remote", "https://app.workato.com/mcp/airo", "--header", "Authorization: Bearer YOUR_TOKEN"]
+      "args": ["mcp-remote", "https://app.workato.com/airo_mcp", "--header", "Authorization: Bearer YOUR_TOKEN"]
     }
   }
 }
@@ -84,7 +84,9 @@ Create `.claude/cursor.json` in your workspace settings.
 
 ## Included Skills
 
-### 1. Workato Project Cataloguer (`skills/workato-project-cataloguer.md`)
+Skills live in `.claude/skills/<name>/SKILL.md` and are mirrored from `.opencode/skills/<name>/`. Every skill in `.opencode/skills/` must also exist in `.claude/skills/`; edit both together, never one alone.
+
+### 1. Workato Project Cataloguer (`.claude/skills/workato-project-cataloguer/`)
 Automatically discovers and catalogs all recipes in your Workato workspace.
 
 **Commands**:
@@ -95,7 +97,9 @@ Automatically discovers and catalogs all recipes in your Workato workspace.
 "Export recipe inventory to JSON"
 ```
 
-### 2. Workato CLI Orchestrator (`skills/workato-cli-orchestrator.md`)
+**npm scripts**: `npm run discover:projects`, `npm run hydrate:projects -- "Name"`, `npm run hydrate:interactive`. Discovery output is cached in `.workato/project-metadata.json`.
+
+### 2. Workato CLI Orchestrator (`.claude/skills/workato-cli-orchestrator/`)
 Manages recipe synchronization between Git and Workato using wk CLI.
 
 **Commands**:
@@ -105,6 +109,34 @@ Manages recipe synchronization between Git and Workato using wk CLI.
 "Show me differences between Git and Workato"
 "Check the status of all recipes"
 ```
+
+### 3. Workato Teams Bot Setup (`.claude/skills/workato-teams-bot-setup/`)
+Guided setup of a Microsoft Teams Enterprise Workbot in Workato, generating Terraform and/or Azure CLI. Includes `references/` (quick-start, Terraform and Azure CLI guides) and `scripts/setup-interactive.js`.
+
+**Commands**:
+```
+"Set up a Teams bot"
+"Create an Enterprise Workbot with Terraform"
+"Generate Azure CLI scripts for a Teams bot"
+```
+
+## Other Agent Briefing Folders
+
+This repo is configured for several agent clients. Keep them aligned when changing skills, MCP endpoints, or setup steps.
+
+| Folder / file | Client | Notes |
+|---|---|---|
+| `.claude/` (`claude.md`, `skills/`) | Claude Code / Claude Desktop | This briefing. Project MCP config is `.mcp.json`. |
+| `.opencode/` | OpenCode (also Cursor, generic MCP clients) | `opencode.jsonc` is the main config. Skills are auto-discovered from `.opencode/skills/<name>/SKILL.md`. |
+| `.opencode/mcps/` | Claude Desktop, Cursor, generic MCP | `claude-desktop-config.json`, `cursor-config.json`, `generic-mcp-client-config.json` |
+| `claude_desktop_config.json` (repo root) | Claude Desktop | Example config; endpoints use `app.workato.com` |
+
+Guides inside `.opencode/`: `README.md`, `SETUP-BY-CLIENT.md`, `COMPATIBILITY.md`, `FILE-GUIDE.md`, `INDEX.md`, `MIGRATION-SUMMARY.md`.
+
+Differences to be aware of:
+- OpenCode reads tokens from the shell environment (`{env:WORKATO_API_TOKEN}`). Claude Code reads the token from `.env` through `scripts/mcp-auth-header.sh` (the `headersHelper` in `.mcp.json`), so it works even when Claude Code is launched without your shell profile.
+- All configs point at the default data center: `https://app.workato.com/mcp` and `/airo_mcp`.
+- `.opencode/skills/workato-teams-bot-setup/CLAUDE.md` is a Claude-oriented briefing for that skill; it is mirrored into `.claude/skills/workato-teams-bot-setup/`.
 
 ## Workflow Examples
 

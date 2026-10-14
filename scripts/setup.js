@@ -74,7 +74,7 @@ const main = () => {
 
   const files = {
     '.env': '.env (secrets)',
-    'mcp.json': 'mcp.json (MCP configuration)',
+    '.mcp.json': '.mcp.json (MCP configuration)',
     'claude_desktop_config.json': 'claude_desktop_config.json (Claude Desktop config)',
     'linter-config.json': 'linter-config.json (Recipe Linter config)'
   };

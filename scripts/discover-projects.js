@@ -21,7 +21,7 @@ async function discoverProjects() {
     // Check if wk profile is set up
     let profile = process.env.WORKATO_PROFILE || 'workato-dev';
     
-    // Handle variable references like ${WORKATO_DEV_ANZ_PRESALES}
+    // Handle variable references like ${MY_PROFILE_VAR}
     if (profile && profile.startsWith('${') && profile.endsWith('}')) {
       const varName = profile.slice(2, -1);
       const resolvedProfile = process.env[varName];

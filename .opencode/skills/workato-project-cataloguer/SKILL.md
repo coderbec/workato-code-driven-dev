@@ -1,3 +1,8 @@
+---
+name: workato-project-cataloguer
+description: Discover, catalogue, and export all recipes and projects from a Workato workspace. Use for first-time workspace setup, recipe inventory, and project summaries.
+---
+
 # Workato Project Cataloguer
 
 **Purpose**: Discover, catalogue, and export all recipes and projects from your Workato workspace.
@@ -46,9 +51,7 @@ npm run discover:projects
 # Step 2: Hydrate specific projects
 npm run hydrate:projects -- "Data Sync" "Customer API"
 
-# Step 3: Commit to Git
-git add recipes/
-git commit -m "Initial hydration: Data Sync & Customer API"
+# Hydrated files stay local (recipes/ is gitignored, nothing to commit)
 git push
 ```
 
@@ -57,9 +60,7 @@ git push
 # Step 1: Discover projects and interactively select which to hydrate
 npm run hydrate:interactive
 
-# Step 2: Commit to Git
-git add recipes/
-git commit -m "Initial hydration"
+# Hydrated files stay local (recipes/ is gitignored, nothing to commit)
 git push
 ```
 
@@ -159,8 +160,7 @@ The recommended first-time setup workflow:
    → Recipes saved to recipes/ directory
    
 4. Git: "Commit these recipes"
-   → git add recipes/
-   → git commit -m "Initial hydration: [project names]"
+   → recipes/ is gitignored local working state, so there is nothing to commit
    → git push
    
 5. Result: Selective projects are version-controlled, others remain in Workato
@@ -332,15 +332,11 @@ Customer API |   18    | ✅ Success
 
 ✨ Next Steps:
 1. Review the downloaded recipes in ./recipes/
-2. Commit your changes:
-   $ git add recipes/
-   $ git commit -m "chore: hydrate projects"
+2. Note: ./recipes/ is gitignored local working state (not committed)
 3. Start developing with:
    $ npm run dev
 
-# Step 3: Commit to Git
-$ git add recipes/
-$ git commit -m "Initial hydration: Data Sync & Customer API"
+# Hydrated files stay local (recipes/ is gitignored, nothing to commit)
 $ git push
 
 Result: 42 recipes now version-controlled, others remain in Workato
@@ -397,9 +393,7 @@ Customer API |   18    | ✅ Success
 
 ✨ Next Steps:
 1. Review the downloaded recipes in ./recipes/
-2. Commit your changes:
-   $ git add recipes/
-   $ git commit -m "chore: hydrate projects"
+2. Note: ./recipes/ is gitignored local working state (not committed)
 3. Start developing with:
    $ npm run dev
 ```
@@ -422,9 +416,7 @@ $ npm run hydrate:projects -- "Internal Tools"
 📥 Hydrating: Internal Tools
    └─ 9 recipes hydrated
 
-# Commit to Git
-$ git add recipes/
-$ git commit -m "Hydrate: Internal Tools"
+# Hydrated files stay local (recipes/ is gitignored, nothing to commit)
 $ git push
 
 Result: 51 recipes now in Git (9 newly added)
@@ -456,9 +448,7 @@ Result: 51 recipes now in Git (9 newly added)
    → Selective hydration (not all-or-nothing)
    → Only what you need in Git
    
-4. **Commit**: Save to version control
-   → `git add recipes/`
-   → `git commit -m "Initial hydration: [projects]"`
+4. **Keep local**: recipes/ is gitignored local working state, so there is nothing to commit
 
 ### Ongoing (Add More Projects)
 1. **Review**: "Which projects haven't I hydrated?"
