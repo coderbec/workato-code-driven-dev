@@ -52,7 +52,7 @@ This is a **production-ready template** for managing Workato integrations using 
 
 #### 1️⃣ Clone & Setup
 ```bash
-git clone https://github.com/your-org/workato-code-driven-dev.git
+git clone https://github.com/coderbec/workato-code-driven-dev.git
 cd workato-code-driven-dev
 npm install
 node scripts/setup.js

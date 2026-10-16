@@ -28,13 +28,23 @@ const log = {
 
 const checkDependency = (cmd, name) => {
   try {
-    execSync(`${cmd} --version`, { stdio: 'pipe' });
+    execSync(`${cmd}`, { stdio: 'pipe' });
     log.success(`${name} is installed`);
     return true;
-  } catch {
-    log.warning(`${name} not found. Install with: brew install ${name} (or your package manager)`);
+} catch (err) {
+    const isTap = name.endsWith('/tap');
+    const hint = isTap
+      ? `brew tap ${name} && brew trust ${name}`
+      : `brew install ${name} (or your package manager)`;
+
+    const code = err.status ?? err.errno ?? err.code ?? 'unknown';
+    const stderr = err.stderr?.toString().trim();
+    const detail = stderr || err.message;
+
+    // log.warning(`Error ${code}: ${detail}).`);
+    log.warning(`${name} not found. Install with: ${hint}`);
     return false;
-  }
+}
 };
 
 const checkFile = (filePath, name) => {
@@ -57,9 +67,10 @@ const main = () => {
   const deps = {
     'node --version': 'Node.js',
     'npm --version': 'npm',
-    'git --version': 'Git',
-    'terraform --version': 'Terraform',
-    'az --version': 'Azure CLI'
+    'git --version': 'git',
+    'brew tap|grep hashicorp || { echo "Error: hashicorp tap is not installed."; exit 1; }': 'hashicorp/tap',
+    'terraform --version': 'terraform',
+    'az --version': 'azure-cli'
   };
 
   let allGood = true;
