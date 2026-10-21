@@ -18,8 +18,8 @@ if (v.ok) {
   const loggedIn = !!st && s.ok;
   check('Teams CLI signed in', loggedIn, loggedIn ? 'yes' : 'run: teams login   (or teams login --device-code)');
   if (loggedIn) {
-    const sideload = JSON.stringify(st).toLowerCase();
-    const enabled = /sideloading"?\s*:\s*("?enabled"?|true)/.test(sideload);
+    const sl = st.tdp && st.tdp.sideloading;
+    const enabled = sl && typeof sl === 'object' ? sl.tenant === true && sl.user !== false : /enabled|true/i.test(String(sl));
     check('Custom app upload (sideloading) enabled', enabled, enabled ? 'enabled' : 'disabled: a tenant admin must enable custom app upload first');
   }
 }
