@@ -30,7 +30,7 @@ This is a **production-ready template** for managing Workato integrations using 
 
 - 📝 **Recipes as Code** — Store recipes in Git (JSON files)
 - 🔐 **Header Authentication** — MCP servers with secure header-based auth
-- 🏗️ **Infrastructure as Code** — Terraform for Azure resources
+- 🏗️ **Infrastructure as Code** — Terraform for Azure resources (optional)
 - 🤖 **AI-Powered Development** — Claude + Workato MCPs
 - 🔄 **CI/CD Ready** — Automated linting, testing, deployment
 - 📊 **Governance** — Recipe linting, standards enforcement
@@ -321,44 +321,21 @@ This project includes specialized skills for Claude Desktop, OpenCode, and Curso
 
 ---
 
-### 3. **Workato Teams Bot Setup** ⭐ NEW
-**What it does**: Set up a Microsoft Teams Enterprise Workbot with Infrastructure as Code (Terraform or Azure CLI).
+### 3. **Workato Teams Bot Setup**
+**What it does**: Sets up a Workato Enterprise Workbot for Microsoft Teams end to end with the Teams Developer CLI, the Workato API and Microsoft Graph. Run it after `start workato setup`.
 
-**Use cases**:
-- Automate bot creation: "Set up a Teams bot for HR" → Guided setup with all configuration options
-- Generate Terraform: Choose Terraform option → Production-ready Infrastructure as Code
-- Generate scripts: Choose Azure CLI option → Step-by-step bash scripts with manual steps documented
-- Comprehensive guides: Auto-generated setup checklists for manual portal configuration
+**What it automates**:
+- Creates the Teams-managed bot, the Entra app registration (multitenant) and the Teams app, with your Workato bot endpoint
+- Sets the Entra redirect URI for your data centre
+- Sets bot scopes (Personal, Team, Group Chat), file upload, the `help` command, valid domain `*.workato.com`, descriptions, developer and policy links in the manifest
+- Creates the Workato `teams_bot` custom OAuth profile (the client secret goes straight from the CLI to the Workato API; it is never written to a file or shown)
+- Publishes to the org catalog through Graph: directly for Teams admins, otherwise submits for admin review and says what to approve
 
-**Key features**:
-- ✅ Guided interactive prompts (5 phases, all required data collected)
-- ✅ Terraform Infrastructure as Code (full Azure AD app registration automation)
-- ✅ Azure CLI scripting (transparent, step-by-step shell commands)
-- ✅ Comprehensive setup checklists (manual steps for Workato, Teams, Azure portals)
-- ✅ Security best practices (secrets handling, expiration tracking, rotation guidance)
-- ✅ All Workato data centers supported (US, EU, JP, SG, AU, IL, CN, KR, UK)
-- ✅ Input validation (URLs, UUIDs, dates with helpful error messages)
-- ✅ Troubleshooting guides (common issues with solutions)
+**Still manual**: creating the custom bot in Workato (to copy its Bot endpoint address), selecting the OAuth profile in Workbot Step 3, and admin approval when you are not a Teams admin. See `references/manual-fallback.md`.
 
-**Deployment options**:
-1. **Terraform** (Recommended) — Full Infrastructure as Code, version controllable, repeatable
-2. **Azure CLI** (Manual) — Step-by-step bash script, transparent, easy to modify
-3. **Manual** (Checklist) — Follow guided checklist, maximum control, best for learning
+**Say**: "Set up a Teams bot" (needs Node 22.12+, the `teams` CLI, `az login`, and custom app upload enabled in your tenant; preflight checks all of this).
 
-**Generated outputs**:
-- `teams-bot-terraform/` — Terraform modules (main.tf, variables.tf, outputs.tf, tfvars)
-- `teams-bot-setup.sh` — Bash script for Azure CLI workflow
-- `setup-checklist.md` — Step-by-step verification guide for Workato, Teams, and Azure portals
-- `teams-bot-config.json` — Configuration reference (no secrets)
-
-**Location**: `.opencode/skills/workato-teams-bot-setup/`
-
-**Documentation**: 
-- Main skill: `.opencode/skills/workato-teams-bot-setup/SKILL.md`
-- Claude instructions: `.opencode/skills/workato-teams-bot-setup/CLAUDE.md`
-- Quick start: `.opencode/skills/workato-teams-bot-setup/references/quick-start.md`
-- Terraform guide: `.opencode/skills/workato-teams-bot-setup/references/terraform-guide.md`
-- Azure CLI guide: `.opencode/skills/workato-teams-bot-setup/references/azure-cli-guide.md`
+**Location**: `.claude/skills/workato-teams-bot-setup/` (mirrored in `.opencode/skills/` and `.agents/skills/`). Start with `SKILL.md`.
 
 ---
 

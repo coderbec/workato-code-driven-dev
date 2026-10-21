@@ -1,230 +1,53 @@
 ---
 name: workato-teams-bot-setup
-description: Set up a Workato Enterprise Teams bot with guided user input and Infrastructure as Code (Terraform and/or Azure CLI). Use this skill when the user asks to create, set up, deploy, configure, or automate a Microsoft Teams Enterprise Workbot in Workato. Also trigger on requests to "set up a Teams bot", "create a Teams integration", "automate Teams bot deployment", "Teams bot setup", "Enterprise Workbot", or "bot infrastructure as code". Covers all required inputs for Workato side, Microsoft side (Bot Management, App registration, OAuth), and Azure AD configuration with both automated and manual options.
+description: Set up a Workato Enterprise Workbot for Microsoft Teams end to end. Use when the user asks to create, set up, deploy or configure a Teams Enterprise Workbot, "Teams bot setup", "Enterprise Workbot", or to attach a bot to a Teams app, set bot scopes/commands/manifest, or publish it to the org. Uses the Teams Developer CLI to create the bot, Entra app and Teams app, sets scopes, files, help command and domains, creates the Workato Teams bot OAuth profile through the Workato API, and publishes via Microsoft Graph (publishes directly for Teams admins, otherwise submits for admin review).
 ---
 
-# Workato Enterprise Teams Bot Setup
+# Workato Enterprise Workbot for Teams
 
-## Overview
+Automates everything in Workato's "Create a Microsoft Teams Enterprise Workbot" guide except two short manual steps (creating the custom bot in Workato to get its endpoint, and selecting the OAuth profile in Workbot Step 3). Run it after `start workato setup` has been completed.
 
-This skill guides you through setting up a **Microsoft Teams Enterprise Workbot** in Workato with full infrastructure automation. You'll gather all required information interactively, then generate **Terraform** and/or **Azure CLI** scripts to automate the setup.
+## Ground rules
+- **Signpost.** Before each step print `Step N/9: <what and why>`; afterwards say PASS / FAIL.
+- **No secrets in files or chat.** The bot's client secret is read from the Teams CLI's JSON output into memory by `scripts/provision.js` and sent straight to the Workato API. Never ask the user to paste a secret, never write one to disk, never print one. Do not use the Workato MCP `post_custom_oauth_profiles` tool for this: it would put the secret in the conversation.
+- **Ask before outward actions.** Confirm the inputs and the data centre before running `provision.js`; confirm before `publish.js`.
+- **One failure doesn't stop the run.** `provision.js` finishes what it can and lists "Left for you". Relay that list and point to `references/manual-fallback.md` for any step that needs doing by hand.
+- Scripts live in `scripts/` (cross-platform Node, run from the repo root as `node .claude/skills/workato-teams-bot-setup/scripts/<name>.js`). They reuse `scripts/lib/data-centers.js` and the data centre in the generated `.mcp.json`.
 
-## Key Concepts
+## Step 1/9: Preflight
+Run `scripts/preflight.js`. It checks Node 22.12+, the Teams Developer CLI, that the CLI is signed in with **custom app upload (sideloading) enabled**, `az login`, `WORKATO_CODE_DEV`, and the data centre from `.mcp.json`. For each FAIL, tell the user the fix it prints:
+- CLI missing: `npm install -g @microsoft/teams.cli` (offer to run it).
+- Not signed in: `teams login` (or `teams login --device-code`); the user completes the browser sign-in.
+- Sideloading disabled: a Teams tenant admin must enable custom app upload; stop here.
+- No `.mcp.json` / variable: run `start workato setup` first.
+Roles needed in Microsoft 365: Application Administrator, Cloud Application Administrator, Global Administrator or Privileged Role Administrator (for the Entra redirect URI).
 
-**Enterprise Workbots** are Microsoft Teams apps that:
-- Run on the Workato bot platform
-- Can be fully customized (branding, OAuth, permissions)
-- Support sideloading into Teams groups/channels
-- Require configuration in both Workato and Microsoft
+## Step 2/9: Collect inputs
+Ask for: bot name (1-30 chars: letters, numbers, spaces, hyphens), short description (<=80), long description (<=4000), developer/company name (<=32), website, privacy policy URL, terms of use URL (all https). Fixed defaults, taken from Workato's guide: upload/download files on, scopes Personal + Team + Group Chat, a `help` command, valid domain `*.workato.com`, multitenant sign-in. Do not ask for a Client ID or Secret.
 
-**Prerequisites in place:**
-- You have Workato access to **Platform > Workbot > Custom bots** tab
-- You have Microsoft Azure admin role (Application Admin, Cloud App Admin, Global Admin, or Privileged Role Admin)
-- Your Workato instance has Custom OAuth profiles enabled
+## Step 3/9: Create the custom bot in Workato (manual)
+Tell the user: in Workato go to **Platform > Workbot > Custom bots > Create a custom bot**, choose **Workbot for Microsoft Teams**, enter the same name, click **Create new app**, and copy the **Bot endpoint address** (looks like `https://app.workato.com/skype_webhooks/event?coak_id=42`). Keep that Workato tab open; Step 7 finishes there. The endpoint is not a secret, so it may be pasted into the chat. No API for this step was found.
 
-## Workflow: Guided Input → Code Generation
+## Steps 4-7/9: Provision
+Run `scripts/provision.js` with the inputs (first with `--dry-run` and show the user the plan). It then:
+- **4**: checks Workato for an existing `teams_bot` OAuth profile of that name (stops if there is one), then `teams app create ... --sign-in-audience multipleOrgs --json`: creates the bot (Teams-managed, the equivalent of Developer Portal Bot Management), the Entra app registration and the Teams app, with the Workato endpoint as the bot endpoint.
+- **5**: sets the Entra **web redirect URI** for the data centre (`<host>/oauth/callback`) with `az ad app update`.
+- **6**: `teams app update` sets name/descriptions/developer/links and bot scopes; `teams app manifest update --set-json` sets `supportsFiles`, the `help` command list and `validDomains` (`*.workato.com`).
+- **7**: creates the Workato custom OAuth profile (provider `teams_bot`, client ID = Bot ID, client secret) with `WORKATO_CODE_DEV`.
+It prints the Bot ID, Teams App ID, tenant ID, install link and Developer Portal link, never the secret. If step 7 fails, run `scripts/workato-profile.js` (makes a fresh secret).
 
-### Phase 1: Gather Required Information
+Then tell the user to finish in Workato Workbot **Step 3**: select the OAuth profile named after the bot (enter the Teams App ID as **Application ID** if the form asks) and save. This selection step is unverified against the Workato UI; say so if it differs.
 
-The skill will guide you through collecting:
+## Step 8/9: Publish and approve
+Confirm, then run `scripts/publish.js --teams-app-id <id>`. It downloads the app package from the Developer Portal and posts it to Microsoft Graph with the signed-in user's Azure CLI token:
+- **Teams admin**: publishes directly to the org catalog.
+- **Everyone else**: submits with `requiresReview=true` and prints what the admin must approve (Teams Admin Center > Teams apps > Manage apps). An admin can approve with `scripts/publish.js --teams-app-id <id> --approve`.
+- If the Azure CLI token lacks the Graph `AppCatalog` permission (HTTP 401/403), the zip is kept and manual upload steps are printed (`references/manual-fallback.md`).
 
-1. **Bot Identity**
-   - Bot name (unique, spaces OK, no special chars)
-   - Short description (≤80 chars)
-   - Long description (≤4,000 chars)
-   - Developer/company name
-   
-2. **Bot URLs & Policies**
-   - Website URL (HTTPS)
-   - Privacy policy URL
-   - Terms of use URL
-   
-3. **Microsoft Configuration**
-   - Target data center (US, EU, JP, SG, AU, IL, CN, KR, UK, or self-service)
-   - Bot permissions (Upload/download files, scopes: Personal/Team/Group Chat)
-   - Custom help command (optional)
-   
-4. **Azure AD Configuration**
-   - Application (client) ID from Microsoft Teams Developer Portal
-   - Client secret (for OAuth)
-   - Client secret expiration date
-   
-5. **Deployment Method**
-   - Terraform or Azure CLI (or both)
-   - Target Azure subscription/resource group (if using Terraform)
+## Step 9/9: Install and verify
+Give the install link (`teams app get <Teams App ID> --install-link` if needed). The user adds the bot, sends `help`, and confirms the bot shows connected in Workato. Close with a summary: what was created, what is left manual, and that the client secret expires (check Entra > App registrations > Certificates & secrets; set a reminder).
 
-### Phase 2: Generate Infrastructure Code
-
-The skill generates:
-
-- **`teams-bot-terraform/`** – Terraform modules for Azure app registration, OAuth profile, and Workato bot
-- **`teams-bot-setup.sh`** – Azure CLI script with step-by-step comments
-- **`setup-checklist.md`** – Manual verification checklist for both Workato and Microsoft
-
-## Guided Setup Process
-
-I will ask you the following questions in order. You can skip any optional fields by pressing Enter.
-
-### 1. Bot Identity & Branding
-
-```
-Bot Name (unique, no special chars): [required]
-Short Description (max 80 chars): [required]
-Long Description (max 4000 chars): [required]
-Developer/Company Name: [required]
-```
-
-### 2. URLs & Policies
-
-```
-Website URL (HTTPS): [required]
-  Example: https://www.example.com
-Privacy Policy URL (HTTPS): [required]
-Terms of Use URL (HTTPS): [required]
-```
-
-### 3. Microsoft Configuration
-
-```
-Data Center Region: [required]
-  Options: us, eu, jp, sg, au, il, cn, kr, uk, trial
-  Default: us
-
-Bot Permissions:
-  - Upload and download files? (y/n)
-  - Enable Personal scope? (y/n)
-  - Enable Team scope? (y/n)
-  - Enable Group Chat scope? (y/n)
-
-Custom help command? (optional)
-  Default: "help" with text "Type 'help' to view available commands"
-```
-
-### 4. Azure AD Configuration
-
-```
-Application (Client) ID: [required]
-  Location: Microsoft Teams Dev Portal > Apps > Your App > Basic info
-
-Client Secret: [required]
-  Location: Azure Portal > App registrations > Your app > Certificates & secrets
-
-Client Secret Expiration: [required]
-  Format: yyyy-mm-dd
-  Example: 2025-10-09
-```
-
-### 5. Deployment Method
-
-```
-Preferred deployment method: [required]
-  1. Terraform (recommended for IaC)
-  2. Azure CLI script (manual steps)
-  3. Both (for flexibility)
-
-(If Terraform)
-Azure Subscription ID: [required]
-Azure Resource Group Name: [required]
-```
-
-## Generated Outputs
-
-After you provide all information, the skill generates:
-
-### Option A: Terraform
-- **`main.tf`** – Azure app registration resource
-- **`variables.tf`** – All configurable inputs
-- **`outputs.tf`** – Bot ID, OAuth endpoints
-- **`workato-provider.tf`** – Workato custom OAuth profile
-- **`terraform.tfvars`** – Pre-populated with your values
-
-**Usage:**
-```bash
-cd teams-bot-terraform
-terraform init
-terraform plan
-terraform apply
-```
-
-### Option B: Azure CLI
-- **`teams-bot-setup.sh`** – Bash script with inline comments
-- Every step is clearly documented
-- Copy-paste friendly commands
-
-**Usage:**
-```bash
-bash teams-bot-setup.sh
-```
-
-### Both Options
-- **`setup-checklist.md`** – Verification steps for Workato console
-
-## Field Reference
-
-| Field | Required | Format | Notes |
-|-------|----------|--------|-------|
-| Bot Name | Yes | String, spaces OK, no special chars | Must be unique in your Workato workspace |
-| Short Description | Yes | ≤80 characters | Displays in Teams app catalog |
-| Long Description | Yes | ≤4,000 characters | Detailed explanation of bot's purpose |
-| Developer Name | Yes | String | Company or person responsible |
-| Website | Yes | HTTPS URL | Public website for the bot/company |
-| Privacy Policy | Yes | HTTPS URL | Must exist and be publicly accessible |
-| Terms of Use | Yes | HTTPS URL | Must exist and be publicly accessible |
-| Data Center | Yes | Enum (us, eu, jp, sg, au, il, cn, kr, uk, trial) | Determines OAuth callback URL |
-| Client ID | Yes | UUID-format string | From Microsoft Teams Dev Portal |
-| Client Secret | Yes | Long alphanumeric string | Keep secure; cannot be retrieved later |
-| Secret Expiration | Yes | YYYY-MM-DD | Track for renewal (typically annual) |
-| Upload Files | Yes | Boolean | Required by default for Teams bots |
-| Personal Scope | Yes | Boolean | Allow 1:1 conversations with bot |
-| Team Scope | Yes | Boolean | Allow bot in team channels |
-| Group Chat Scope | Yes | Boolean | Allow bot in group DMs |
-
-## Warnings & Best Practices
-
-### Security
-- **Client secrets expire** – Document expiration date in your calendar; renewal is manual
-- **Store secrets securely** – Use Terraform `sensitive = true` for outputs, or Azure Key Vault
-- **Delegated vs. Application permissions** – Delegated (default) requires user context; Application permissions are more secure but require additional Azure setup
-
-### Naming
-- Bot name must be unique within your Workato workspace
-- Avoid names conflicting with default bots or other custom bots
-- Use names that reflect the bot's purpose (e.g., "HR Hiring Bot", "Finance Expense Bot")
-
-### Deployment
-- **Terraform first:** If using both Terraform and Azure CLI, deploy Terraform first; it creates the Azure app registration
-- **Manual approval:** After publishing, your Microsoft Teams admin must approve the app in the Teams Admin Center
-
-## After Setup
-
-1. **Verify in Workato:**
-   - Go to **Platform > Workbot > Custom bots**
-   - Confirm your new bot appears with the correct name
-   - Check that credentials are saved
-
-2. **Verify in Microsoft Teams:**
-   - Go to **https://dev.teams.microsoft.com/apps**
-   - Locate your app and confirm all info is present
-
-3. **Publish & Approve:**
-   - Submit publish request in Teams Dev Portal
-   - Ask your Microsoft Teams admin to approve it
-
-4. **Add to Teams:**
-   - In any Teams channel, type `@` and find your bot
-   - Click to add it to the channel
-
-5. **Track Expiration:**
-   - Set calendar reminders for client secret expiration
-   - Renew **before** the date to avoid service disruption
-
-## References
-
-- [Workato Docs: Create an Enterprise Workbot](https://docs.workato.com/en/workbot-for-teams/guides/creating-enterprise-workbot)
-- [Microsoft Teams Developer Portal](https://dev.teams.microsoft.com)
-- [Azure App Registrations Portal](https://portal.azure.com)
-
-## Next Steps
-
-I'm ready to guide you through setup. Let me start by asking your bot name and description.
-
+## Notes
+- The Teams Developer CLI is in preview; flags may change. If a command fails, run `teams <command> --help` (put `--disable-auto-update` before the subcommand) and adapt.
+- `--azure` bots (Azure Bot resource) are not used: Workato's guide uses a Teams-managed bot.
+- References: Workato "Create a Microsoft Teams Enterprise Workbot"; Microsoft Learn "Publish teamsApp" (Graph) and the Teams Developer CLI quickstart.

@@ -103,13 +103,13 @@ Manages recipe synchronization between Git and Workato using wk CLI.
 ```
 
 ### 3. Workato Teams Bot Setup (`.Codex/skills/workato-teams-bot-setup/`)
-Guided setup of a Microsoft Teams Enterprise Workbot in Workato, generating Terraform and/or Azure CLI. Includes `references/` (quick-start, Terraform and Azure CLI guides) and `scripts/setup-interactive.js`.
+End-to-end setup of a Microsoft Teams Enterprise Workbot: Teams Developer CLI creates the bot, Entra app and Teams app; scopes, files, help command and domains are set in the manifest; the Workato `teams_bot` OAuth profile is created through the Workato API (secret never written to a file); publishing goes through Microsoft Graph (direct for Teams admins, otherwise submitted for review). Run after `start workato setup`. Includes `references/manual-fallback.md` and `scripts/` (preflight, provision, publish).
 
 **Commands**:
 ```
 "Set up a Teams bot"
-"Create an Enterprise Workbot with Terraform"
-"Generate Azure CLI scripts for a Teams bot"
+"Create an Enterprise Workbot"
+"Publish my Teams bot to the org"
 ```
 
 ## Other Agent Briefing Folders
