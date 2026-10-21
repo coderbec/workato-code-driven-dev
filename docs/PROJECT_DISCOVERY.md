@@ -247,7 +247,7 @@ npm run discover:projects
 which wk
 
 # If not installed, install it
-npm install -g @workato/wk
+brew install workato-devs/tap/wk   # macOS (Windows: scoop install wk; see README)
 
 # Check if you're authenticated
 wk auth status

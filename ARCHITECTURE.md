@@ -167,7 +167,7 @@ POST /api/connectors/:id/release
 All MCPs use **header-based authentication**:
 
 ```bash
-curl -H "Authorization: Bearer $WORKATO_API_TOKEN" \
+curl -H "Authorization: Bearer $WORKATO_CODE_DEV" \
      https://app.workato.com/api/recipes
 ```
 
@@ -245,15 +245,15 @@ terraform/
 ### Layer 1: Workato API Token
 ```
 Source: Workspace Admin > API clients
-Storage: .env (WORKATO_API_TOKEN)
-Usage: All MCP calls
-Header: Authorization: Bearer $WORKATO_API_TOKEN
+Storage: WORKATO_CODE_DEV profile variable (OS profile; never a file)
+Usage: All MCP calls and the wk CLI profile
+Header: Authorization: Bearer ${WORKATO_CODE_DEV}
 ```
 
 ### Layer 2: Azure Service Principal
 ```
 Source: az ad sp create-for-rbac
-Storage: .env (AZURE_CLIENT_ID, AZURE_CLIENT_SECRET)
+Storage: shell environment (TF_VAR_*) or az login; never a file in the repo
 Usage: Terraform authentication
 ```
 
@@ -362,13 +362,13 @@ Approval: Manual review + merge
 
 ```
 Developer Machine
-    ↓ (.env - local only)
-    ├─ WORKATO_API_TOKEN
+    ↓ (OS profile variable - local only)
+    ├─ WORKATO_CODE_DEV
     ├─ AZURE_CLIENT_SECRET
     └─ Database passwords (never stored locally)
 
     ↓ (GitHub Secrets)
-    ├─ WORKATO_API_TOKEN
+    ├─ WORKATO_CODE_DEV
     ├─ AZURE_CLIENT_SECRET
     └─ AZURE_* credentials
 

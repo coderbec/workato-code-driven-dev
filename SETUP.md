@@ -51,176 +51,45 @@ cd workato-code-driven-dev
 
 ---
 
-## Step 2: Install Dependencies
+## Steps 2 to 7: Run the guided setup
 
+Everything from installing the wk CLI to pulling recipes is done by the guided setup in Claude Code. There is no `.env` file and no manual token handling.
+
+1. In a terminal in this folder, run `claude`.
+2. Type **`start workato setup`** (or **`/workato-setup`**).
+3. Follow the prompts. Claude says what it is doing at each step.
+
+### What it does, in order
+| Phase | Step | Result |
+|---|---|---|
+| Before restart | 1. Profile variable | Checks `WORKATO_CODE_DEV` (your Workato API token). If missing, it shows the command to run in a new terminal |
+| | 2. Data centre | You choose us / eu / jp / sg / au / il / kr / uk / trial |
+| | 3. Developer Labs | Installs wk CLI, Recipe Linter, Developer Skills, Recipe Visualizer. One failure never blocks the others |
+| | 4. wk profile | Creates a new `workato-code-dev-N` profile and makes it the default |
+| | 5. MCP config | Generates `.mcp.json` for the Developer API MCP and AIRO MCP (header auth) |
+| Restart | 6. Restart Claude | Exit, run `claude` again, approve the two MCP servers, run `/mcp` and check both say **connected** |
+| After restart | 7-9. Projects | Confirms the MCPs, lists your projects, hydrates the ones you pick into `recipes/` |
+
+### Get your Workato API token
+1. Go to **Workspace admin** > **API clients**
+2. Create a client with a role that includes the **Developer API MCP** and **AIRO MCP** tools
+3. Copy the token (it is shown once)
+
+### Set the profile variable (new terminal, same project folder)
+| OS | Command |
+|---|---|
+| macOS (zsh) | `echo 'export WORKATO_CODE_DEV="<token>"' >> ~/.zshrc` |
+| Windows (PowerShell, cmd or VS Code terminal) | `setx WORKATO_CODE_DEV "<token>"` |
+
+Then fully quit and reopen VS Code (if you use it), run `claude` in this folder and say **start workato setup** again.
+
+### Azure credentials (optional, only for Terraform)
+Do not put these in a file in this repo. Sign in with `az login`, or export `TF_VAR_*` variables in your shell, or keep a values file outside the repo.
+
+### Verify
 ```bash
-npm install
-```
-
-This installs:
-- `@workato/wk-cli` — Workato CLI for recipe sync
-- `@workato/recipe-linter` — Linting for recipes
-- `mcp-remote` — MCP client
-
-**Verify**:
-```bash
-wk --version
-npm run lint --version
-```
-
----
-
-## Step 3: Run Setup Wizard
-
-```bash
-node scripts/setup.js
-```
-
-This checks:
-- ✅ All dependencies installed
-- ✅ Configuration files present
-- ✅ Environment variables ready
-
-Output will look like:
-```
-═══════════════════════════════════════════════════════════
-   Workato Code-Driven Development - Project Setup
-═══════════════════════════════════════════════════════════
-
-ℹ️ → Checking system dependencies...
-
-✅ Node.js is installed
-✅ npm is installed
-✅ Git is installed
-✅ Terraform is installed
-✅ Azure CLI is installed
-
-✅ All dependencies are installed! You're ready to go.
-```
-
----
-
-## Step 4: Configure Environment Variables
-
-### Copy Template
-```bash
-cp .env.example .env
-```
-
-### Get Workato API Token
-
-1. Go to **Workspace Admin** > **API Clients**
-2. Click **Create New**
-3. Name: `workato-code-driven-dev`
-4. Copy the **API Token**
-5. Easiest: run `npm run setup:token` and paste it (hidden); it verifies the token and saves it for you. Or paste into `.env` by hand (run `npm run setup:data-center` first so the data centre is set; the token must come from that data centre):
-
-```bash
-# .env
-WORKATO_API_TOKEN=your_token_here_from_workspace_admin
-WORKATO_WORKSPACE_ID=12345  # Your workspace ID
-```
-
-**Find Workspace ID**:
-- Log in to Workato and look at the URL (US: `www.workato.com`, others: `app.<code>.workato.com`)
-- Open the workspace dashboard; the URL contains `/workspaces/12345/`
-- Your ID is `12345`
-
-### Get Azure Credentials (Optional, only if using Terraform)
-
-```bash
-# Login with Azure CLI
-az login
-
-# Get subscription details
-az account show --query "{name:name, id:id, tenantId:tenantId}"
-
-# Create service principal for Terraform
-az ad sp create-for-rbac --role="Contributor"
-```
-
-Paste output into `.env`:
-```bash
-AZURE_SUBSCRIPTION_ID=...
-AZURE_TENANT_ID=...
-AZURE_CLIENT_ID=...
-AZURE_CLIENT_SECRET=...
-```
-
-### Verify Configuration
-
-```bash
-# Check if .env is readable
-cat .env
-
-# Verify no secrets in Git
-git status
-# Should show: .env (not staged)
-```
-
----
-
-## Step 5: Authenticate with Workato
-
-```bash
-npm run wk:auth
-```
-
-You'll be prompted:
-```
-Enter your Workato API token: [paste token]
-```
-
-**Verify authentication**:
-```bash
-npm run wk:status
-```
-
-Should output:
-```
-✅ Authenticated as: your-workspace
-```
-
----
-
-## Step 6: Pull Existing Recipes
-
-This downloads all recipes from your workspace:
-
-```bash
-npm run wk:pull
-```
-
-Output:
-```
-Pulling recipes from workspace...
-✅ 42 recipes downloaded
-✅ Saved to recipes/
-```
-
-**Verify recipes downloaded**:
-```bash
-ls recipes/
-# Should show: recipe_1.json, recipe_2.json, etc.
-
-wc -l recipes/*.json
-# Shows number of files
-```
-
----
-
-## Step 7: Commit to Git
-
-```bash
-git add recipes/
-git commit -m "Initial: backup of Workato recipes"
-git push origin main
-```
-
-**Verify**:
-```bash
-git log --oneline -5
-# Should show your commit
+node scripts/setup/status.js     # shows which setup steps are done
+wk auth status                   # active wk profile and connectivity
 ```
 
 ---
@@ -365,7 +234,7 @@ Add these secrets:
 
 | Secret Name | Value |
 |---|---|
-| `WORKATO_API_TOKEN` | Your Workato API token |
+| `WORKATO_CODE_DEV` | Your Workato API token (same value as your local profile variable) |
 | `WORKATO_WORKSPACE_ID` | Your workspace ID |
 | `AZURE_SUBSCRIPTION_ID` | From `az account show` |
 | `AZURE_TENANT_ID` | From service principal |
@@ -396,8 +265,8 @@ ls recipes/ | wc -l
 # Check Git
 git status
 
-# Check environment
-grep -v "^#" .env | grep -v "^$"
+# Check setup state (never prints the token)
+node scripts/setup/status.js
 ```
 
 Expected output:
@@ -410,7 +279,7 @@ Expected output:
 ✅ Authenticated as: your-workspace
 ✅ 42 recipes found
 ✅ Git repository clean
-✅ Environment variables loaded
+✅ WORKATO_CODE_DEV set; wk profile active
 ```
 
 ---
@@ -429,9 +298,11 @@ Next steps:
 ## Troubleshooting
 
 ### "Command not found: wk"
+Say `start workato setup`; step 3 installs it. Or by hand:
 ```bash
-npm install -g @workato/wk-cli
-wk --version
+brew install workato-devs/tap/wk                                                    # macOS
+scoop bucket add workato-devs https://github.com/workato-devs/scoop-bucket; scoop install wk   # Windows
+wk version
 ```
 
 ### "Cannot authenticate"
@@ -439,16 +310,12 @@ wk --version
 # Check the active profile and connectivity
 wk auth status
 
-# Re-authenticate
-npm run wk:auth
+# Create a fresh profile: say "start workato setup" in Claude Code
 ```
 
 ### "Terraform fails"
 ```bash
-# Ensure .env is sourced
-set -a
-source .env
-set +a
+# Ensure your Azure credentials are available in this shell (az login, or TF_VAR_* variables)
 
 # Try init again
 npm run terraform:init

@@ -1,5 +1,7 @@
 # Compatibility Matrix
 
+> **Note:** Claude Code is set up by the guided setup (`start workato setup` or `/workato-setup`), which uses the `WORKATO_CODE_DEV` profile variable and no `.env` file. This document covers the other clients (OpenCode, Claude Desktop, Cursor, generic MCP), which still use their own token handling (`WORKATO_API_TOKEN` or `AUTH_HEADER`) and are not yet migrated. Where it mentions a `.env` file, treat that as legacy for those clients.
+
 This document verifies that the project is compatible with all major AI development tool harnesses.
 
 ## ✅ Verified Compatibility

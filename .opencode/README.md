@@ -9,14 +9,10 @@ This project has been converted to be compatible with **OpenCode**, **Claude Des
 npm install
 ```
 
-### 2. Configure Environment
-```bash
-cp .env.example .env
-# Edit .env with your Workato credentials:
-# - WORKATO_API_TOKEN (from Workspace Admin > API clients)
-# - WORKATO_WORKSPACE_ID (your workspace ID)
-# - AIRO_API_TOKEN (optional, for custom connectors)
-```
+### 2. Run the guided setup
+In Claude Code, run `claude` in this folder and say `start workato setup` (or `/workato-setup`). It uses the `WORKATO_CODE_DEV` profile variable (no `.env`), installs the wk CLI and creates the wk profile.
+
+For OpenCode itself, export `WORKATO_API_TOKEN` in your shell (same token as `WORKATO_CODE_DEV`): `opencode.jsonc` reads it from the environment. OpenCode is not yet part of the guided setup.
 
 ### 3. Verify Setup
 ```bash
@@ -180,18 +176,13 @@ Use `.opencode/mcps/generic-mcp-client-config.json` for any MCP-compatible clien
 - `GITHUB_TOKEN` - For GitHub integration
 - `GITHUB_REPO` - GitHub repository reference
 
-Store these in `.env` (never commit this file):
-```bash
-WORKATO_API_TOKEN=your_token_here
-WORKATO_WORKSPACE_ID=your_workspace_id
-AIRO_API_TOKEN=optional_airo_token
-```
+Set these in your shell environment (never in a file in the repo). Claude Code uses `WORKATO_CODE_DEV` instead; see the main README.
 
 ## 🚀 NPM Scripts
 
 ```bash
 # Authentication & Status
-npm run wk:auth      # Authenticate with Workato
+wk auth status       # Check the active wk profile
 npm run wk:status    # Check connection status
 
 # Recipe Management
@@ -215,10 +206,9 @@ npm run lint:fix     # Auto-fix linting issues
 
 ## 🛡️ Security Best Practices
 
-- ⚠️ **Never** commit `.env` file
+- ⚠️ **Never** put tokens in files in the repo
 - ⚠️ **Never** hardcode tokens in configuration
 - ✅ Store tokens in environment variables
-- ✅ Use `.env` file (listed in `.gitignore`)
 - ✅ Rotate API tokens regularly
 - ✅ Use least-privilege API clients
 - ✅ Use header authentication (not body tokens)
@@ -246,8 +236,8 @@ npm run lint:fix     # Auto-fix linting issues
 
 ### Authentication Failed
 ```bash
-npm run wk:auth
-# Re-authenticate and update tokens
+wk auth status
+# If it fails: rotate the token, then say "start workato setup" in Claude Code
 ```
 
 ### Linter Errors Before Push

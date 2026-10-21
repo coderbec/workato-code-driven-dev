@@ -7,7 +7,7 @@ This document verifies all components are complete and ready to use.
 ## 📋 Core Components
 
 ### Configuration Files
-- [x] `.env.example` — Environment variables template with Workato + Azure
+- [x] `.mcp.template.json` — MCP config template (setup generates `.mcp.json`; token via `WORKATO_CODE_DEV`)
 - [x] `mcp.json` — MCP server configuration with header auth
 - [x] `claude_desktop_config.json` — Claude Desktop MCP setup
 - [x] `linter-config.json` — Recipe linting rules
@@ -121,7 +121,7 @@ This document verifies all components are complete and ready to use.
 | Azure infrastructure | ✅ Ready | Terraform templates provided |
 | GitHub integration | ✅ Ready | Actions workflows included |
 | Claude Desktop | ✅ Ready | MCPs configured, skills provided |
-| Secret management | ✅ Ready | .env template + Key Vault |
+| Secret management | ✅ Ready | `WORKATO_CODE_DEV` profile variable + Key Vault |
 | Documentation | ✅ Ready | Comprehensive with examples |
 
 ---
@@ -159,7 +159,7 @@ workato-code-driven-dev/
 │   └── PROJECT-CHECKLIST.md (this file)
 │
 ├── 🔧 Configuration (6 files)
-│   ├── .env.example
+│   ├── .mcp.template.json
 │   ├── mcp.json
 │   ├── claude_desktop_config.json
 │   ├── linter-config.json
@@ -206,11 +206,9 @@ workato-code-driven-dev/
 3. Decide: Local dev or GitHub?
 
 ### If Local Dev Only (30 minutes)
-1. Follow SETUP.md
-2. Run: `node scripts/setup.js`
-3. Run: `npm install`
-4. Configure `.env` with Workato token
-5. Try: `npm run wk:pull`
+1. Run `claude` in this folder and say `start workato setup`
+2. Follow the prompts (restart Claude when asked)
+3. Try: `npm run wk:pull`
 
 ### If Using GitHub (45 minutes)
 1. Follow GITHUB-SETUP.md
@@ -229,8 +227,8 @@ workato-code-driven-dev/
 ## 🔒 Security Checklist
 
 - [x] No API tokens in repository
-- [x] `.env` in `.gitignore`
-- [x] Secret template provided (`.env.example`)
+- [x] Token held only in the `WORKATO_CODE_DEV` profile variable; no `.env` used
+- [x] `.mcp.json` (generated) is gitignored
 - [x] Header auth (not token in body)
 - [x] Linter prevents hardcoded secrets
 - [x] GitHub Secrets documentation included

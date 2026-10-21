@@ -40,7 +40,7 @@ Welcome to **Workato Code-Driven Development**! This document helps you find wha
 
 | File | Purpose | Status |
 |---|---|---|
-| **[.env.example](.env.example)** | Environment variables template | Requires setup |
+| **[.mcp.template.json](.mcp.template.json)** | MCP config template; setup generates `.mcp.json` | ✅ Ready |
 | **[mcp.json](mcp.json)** | MCP server configuration | ✅ Ready |
 | **[claude_desktop_config.json](claude_desktop_config.json)** | Claude Desktop setup | ✅ Ready |
 | **[linter-config.json](linter-config.json)** | Recipe linting rules | ✅ Ready |
@@ -212,7 +212,7 @@ git merge feature/my-recipe
 | Issue | Solution |
 |---|---|
 | "Cannot find module" | See [README.md § Troubleshooting](README.md#-troubleshooting) |
-| "Authentication failed" | Run `npm run wk:auth` |
+| "Authentication failed" | Run `wk auth status`; or say `start workato setup` for a fresh profile |
 | "Linter errors" | Run `npm run lint:fix` |
 | "Terraform fails" | Check [SETUP.md § Step 8](SETUP.md#step-8-optional-setup-terraform--azure) |
 | "Git push fails" | See [CONTRIBUTING.md § Troubleshooting](CONTRIBUTING.md#troubleshooting) |
@@ -249,7 +249,7 @@ workato-code-driven-dev/
 ├── .claude/                 ← Claude integration
 ├── scripts/                 ← Helper scripts
 │
-├── .env.example             ← Secrets template
+├── .mcp.template.json       ← MCP config template (setup renders .mcp.json)
 ├── mcp.json                 ← MCP config
 ├── claude_desktop_config.json
 ├── linter-config.json
@@ -264,7 +264,7 @@ workato-code-driven-dev/
 A: In the `recipes/` directory as JSON files.
 
 **Q: How do I authenticate?**  
-A: Run `npm run wk:auth` after setup.
+A: Say `start workato setup` in Claude Code; it creates the wk profile from `WORKATO_CODE_DEV`.
 
 **Q: Can I use this with GitHub?**  
 A: Yes! See [GITHUB-SETUP.md](GITHUB-SETUP.md).

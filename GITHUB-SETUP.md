@@ -72,7 +72,7 @@ Go to your GitHub repository:
 
 | Secret Name | Value | Where to Get |
 |---|---|---|
-| `WORKATO_API_TOKEN` | Your API token | Workspace Admin > API clients |
+| `WORKATO_CODE_DEV` | Your API token | Workspace Admin > API clients |
 | `WORKATO_WORKSPACE_ID` | Your workspace ID | From app.workato.com URL |
 | `AZURE_SUBSCRIPTION_ID` | Azure subscription | `az account show` |
 | `AZURE_TENANT_ID` | Azure tenant ID | From service principal |
@@ -139,8 +139,7 @@ git log --oneline -5
 
 2. **Start developing**:
    ```bash
-   cp .env.example .env
-   # Add your API token
+   # Open the folder in Claude Code and say: start workato setup
    npm run wk:pull
    ```
 
@@ -182,7 +181,7 @@ git push -u origin main
 
 Before sharing the repo:
 
-- [ ] `.env` file is in `.gitignore`
+- [ ] No token is stored in any file in the repo (it lives in `WORKATO_CODE_DEV`)
 - [ ] No hardcoded secrets in repository
 - [ ] GitHub Secrets are configured
 - [ ] Repository is set to **Private**

@@ -349,8 +349,7 @@ npm run lint
 
 ### "Terraform plan fails"
 ```bash
-# Ensure variables are set
-source .env
+# Ensure Azure credentials are available in this shell (az login, or TF_VAR_* variables)
 npm run terraform:plan -var-file='environments/dev.tfvars'
 ```
 
@@ -368,7 +367,7 @@ git push
 ### "wk push fails"
 ```bash
 # Check authentication
-npm run wk:auth
+wk auth status
 
 # Check differences
 npm run wk:diff

@@ -279,8 +279,7 @@ cp .opencode/mcps/claude-desktop-config.json \
 - ✅ All `.md` files
 
 ### ✅ Where secrets go:
-- `.env` file (in root, never commit)
-- Environment variables
+- Environment variables (for Claude Code: the `WORKATO_CODE_DEV` profile variable; no `.env` file)
 - Secrets manager (for CI/CD)
 
 ### Example secure pattern:
@@ -289,7 +288,7 @@ cp .opencode/mcps/claude-desktop-config.json \
 {
   "authentication": {
     "type": "header",
-    "headerValue": "Bearer ${WORKATO_API_TOKEN}"  // Substituted at runtime
+    "headerValue": "Bearer ${WORKATO_CODE_DEV}"  // Substituted at runtime
   }
 }
 
@@ -346,8 +345,7 @@ cp .opencode/mcps/claude-desktop-config.json \
      "optional": ["OPTIONAL_VAR"]
    }
    ```
-2. Document in `.env.example`
-3. Update `README.md` → Environment Variables section
+2. Document it in `README.md`
 
 ---
 
@@ -388,10 +386,9 @@ opencode --check-config
 | File | Purpose | Location |
 |------|---------|----------|
 | `.claude/` | Legacy Claude Desktop config | Root (kept for compatibility) |
-| `.env.example` | Environment variable template | Root |
-| `.env` | Actual environment variables | Root (never commit) |
+| `.mcp.template.json` | Template the guided setup renders into `.mcp.json` | Root |
 | `package.json` | npm configuration | Root |
-| `.mcp.json` | Claude Code project MCP config (uses `scripts/mcp-auth-header.sh`) | Root |
+| `.mcp.json` | Claude Code project MCP config, generated and gitignored (header `Bearer ${WORKATO_CODE_DEV}`) | Root |
 
 ---
 
@@ -406,8 +403,8 @@ A: Yes! It's safe to commit (no secrets, standard format).
 **Q: Should I commit `opencode.jsonc`?**
 A: Yes! It's safe to commit and should be version controlled.
 
-**Q: What about the `.env` file?**
-A: No! Never commit `.env`. It contains secrets.
+**Q: What about a `.env` file?**
+A: This project does not use one. The token lives only in the `WORKATO_CODE_DEV` profile variable.
 
 **Q: Can I have multiple `.opencode/` directories?**
 A: No, but you can have multiple projects with their own `.opencode/`.

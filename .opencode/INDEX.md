@@ -223,7 +223,7 @@ Quick reference guide to all documentation in the `.opencode/` directory.
 ### Project Files
 - [Project README](../README.md) - Project overview
 - [CONTRIBUTING](../CONTRIBUTING.md) - How to contribute
-- [.env.example](../.env.example) - Environment template
+- [.mcp.template.json](../.mcp.template.json) - Claude Code MCP template (rendered by the guided setup)
 
 ---
 
@@ -233,7 +233,7 @@ Before considering your setup complete:
 
 - [ ] Read `README.md`
 - [ ] Read `SETUP-BY-CLIENT.md` for your client
-- [ ] Created/updated `.env` with your tokens
+- [ ] Ran the guided setup (`start workato setup` in Claude Code) or set your client's token variable
 - [ ] Run `npm install` or similar
 - [ ] Test with `npm run wk:status`
 - [ ] Try a skill in your AI client

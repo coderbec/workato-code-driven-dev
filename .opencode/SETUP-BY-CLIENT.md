@@ -1,5 +1,7 @@
 # Setup Guide by AI Client
 
+> **Note:** Claude Code is set up by the guided setup (`start workato setup` or `/workato-setup`), which uses the `WORKATO_CODE_DEV` profile variable and no `.env` file. This document covers the other clients (OpenCode, Claude Desktop, Cursor, generic MCP), which still use their own token handling (`WORKATO_API_TOKEN` or `AUTH_HEADER`) and are not yet migrated. Where it mentions a `.env` file, treat that as legacy for those clients.
+
 This guide shows how to configure this project for your specific AI development tool.
 
 ## Table of Contents
@@ -406,7 +408,7 @@ npm --version
 npm install
 
 # 3. Check authentication
-npm run wk:auth
+wk auth status
 
 # 4. Verify workspace ID
 echo $WORKATO_WORKSPACE_ID
