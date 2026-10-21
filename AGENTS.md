@@ -7,7 +7,7 @@ This project is configured to work with Codex Desktop and Cursor via MCP (Model 
 ### 1. Workato Developer API MCP
 - **Purpose**: Workspace management (recipes, connections, jobs, genies)
 - **Configuration**: `.mcp.json` - Developer API endpoint
-- **Header Auth**: `Authorization: Bearer ${WORKATO_API_TOKEN}`
+- **Header Auth**: `Authorization: Bearer ${WORKATO_CODE_DEV}`
 
 **Available Operations**:
 - List/create/update/delete recipes
@@ -28,7 +28,7 @@ This project is configured to work with Codex Desktop and Cursor via MCP (Model 
 ### 2. AIRO MCP
 - **Purpose**: Custom connector building from natural language
 - **Configuration**: `.mcp.json` - AIRO endpoint
-- **Header Auth**: `Authorization: Bearer ${WORKATO_API_TOKEN}`
+- **Header Auth**: `Authorization: Bearer ${WORKATO_CODE_DEV}`
 
 **Available Operations**:
 - Build custom connectors from API descriptions
@@ -46,23 +46,13 @@ This project is configured to work with Codex Desktop and Cursor via MCP (Model 
 
 ## Setup Instructions
 
-### 1. Choose data centre and configure environment
-```bash
-npm run setup:data-center   # asks which Workato data centre you use; sets URLs everywhere
-[ -f .env ] || cp .env.example .env
-npm run setup:token         # paste your token (hidden); checks it, saves to .env, refreshes the wk profile
-# Edit .env with:
-# - WORKATO_API_TOKEN (from Workspace Admin > API clients)
-# - Azure credentials
-```
+### 1. Run the guided setup
+Open this folder in a terminal, run `claude`, and say **`start workato setup`** (or `/workato-setup`). The skill `workato-setup` checks the `WORKATO_CODE_DEV` profile variable (your API token; shown how to set on macOS/Windows if missing), asks the data centre, installs Workato Developer Labs, creates a `workato-code-dev-N` wk profile, renders `.mcp.json` from `.mcp.template.json`, then has you restart Claude so the MCPs connect (check with `/mcp`) and finally hydrates the projects you choose (`continue workato setup` after the restart). No `.env` file is used.
 
-### 2. Install Dependencies
-```bash
-npm install
-node scripts/setup.js
-```
+### 2. Configure (other clients, optional)
+Claude Code needs nothing further: the guided setup already produced `.mcp.json`. The configs below are for other clients, which still use the older token handling and are not yet part of the guided setup.
 
-### 3. Configure Codex Desktop
+### Codex Desktop
 
 #### Option A: Codex Desktop (Remote MCP)
 Edit `~/.config/Codex/claude_desktop_config.json`:
@@ -131,13 +121,13 @@ This repo is configured for several agent clients. Keep them aligned when changi
 | `.Codex/` (`AGENTS.md`, `skills/`) | Codex / Codex Desktop | This briefing. Project MCP config is `.mcp.json`. |
 | `.opencode/` | OpenCode (also Cursor, generic MCP clients) | `opencode.jsonc` is the main config. Skills are auto-discovered from `.opencode/skills/<name>/SKILL.md`. |
 | `.opencode/mcps/` | Codex Desktop, Cursor, generic MCP | `Codex-desktop-config.json`, `cursor-config.json`, `generic-mcp-client-config.json` |
-| `claude_desktop_config.json` (repo root) | Codex Desktop | Example config; endpoints follow your data centre (`npm run setup:data-center`) |
+| `claude_desktop_config.json` (repo root) | Codex Desktop | Example config; endpoints follow your data centre (data centre is set by the guided setup) |
 
 Guides inside `.opencode/`: `README.md`, `SETUP-BY-CLIENT.md`, `COMPATIBILITY.md`, `FILE-GUIDE.md`, `INDEX.md`, `MIGRATION-SUMMARY.md`.
 
 Differences to be aware of:
-- OpenCode reads tokens from the shell environment (`{env:WORKATO_API_TOKEN}`). Claude Code reads the token from `.env` through `scripts/mcp-auth-header.sh` (the `headersHelper` in `.mcp.json`).
-- Data centre: `npm run setup` asks which one you are in (`npm run setup:data-center` to change it later). It writes `WORKATO_DATA_CENTER`, `WORKATO_REGION` and `WORKATO_API_ENDPOINT` to `.env` and rewrites the MCP URLs in every config above (`us` -> `app.workato.com`, others -> `app.<code>.workato.com`; supported: us, eu, jp, sg, au, il, kr, uk, trial). A token only works in its own data centre.
+- OpenCode reads tokens from the shell environment (`{env:WORKATO_API_TOKEN}`); these other-client configs are not yet migrated to `WORKATO_CODE_DEV`. Claude Code uses `.mcp.json` rendered from `.mcp.template.json`, with `Authorization: Bearer ${WORKATO_CODE_DEV}` expanded by Claude Code at startup (so Claude must be started from a terminal that has the variable).
+- Data centre: chosen in the guided setup (step 2) and written into the generated `.mcp.json` URLs (`us` -> `app.workato.com`, others -> `app.<code>.workato.com`; supported: us, eu, jp, sg, au, il, kr, uk, trial). A token only works in its own data centre.
 - Claude Desktop and generic `mcp-remote` configs take the token as `AUTH_HEADER` (`Bearer <token>`) in their `env` block; Cursor uses `${env:WORKATO_API_TOKEN}`.
 - `.opencode/skills/workato-teams-bot-setup/AGENTS.md` is a Codex-oriented briefing for that skill; it is mirrored into `.Codex/skills/workato-teams-bot-setup/`.
 
@@ -173,23 +163,22 @@ Differences to be aware of:
 ### "MCP Server not found"
 - Restart Codex Desktop
 - Check `~/.config/Codex/claude_desktop_config.json` syntax
-- Verify WORKATO_API_TOKEN is set in environment
+- Verify WORKATO_CODE_DEV is set in the terminal that started Claude (`node scripts/setup/check-profile-var.js`); restart the terminal/VS Code after setting it
 
 ### "Authentication failed"
-- Change the token in one step: `npm run setup:token` (or `pbpaste | npm run setup:token -- --stdin`), then reconnect with `/mcp`
+- Rotate the token: update the `WORKATO_CODE_DEV` variable in your profile, restart the terminal/VS Code and `claude`, then reconnect with `/mcp`
 - Verify token hasn't expired
 - Generate a new token in Workspace Admin
 - Ensure header format is: `Authorization: Bearer ${TOKEN}`
 
 ### "wk CLI commands not working"
-- Run: `npm run wk:auth`
+- Run: `wk auth status`, or say `start workato setup` to create a fresh profile
 - Check: `npm run wk:status`
 - Verify: `wk --version`
 
 ## Security Notes
 
-- ⚠️ Never commit `.env` file
-- ⚠️ Store tokens in `.env` or GitHub Secrets
+- ⚠️ Never put tokens in files; the token lives only in the `WORKATO_CODE_DEV` profile variable (or GitHub Secrets in CI)
 - ✅ Use header authentication (not token in body)
 - ✅ Rotate API tokens regularly
 - ✅ Use least-privilege API client roles

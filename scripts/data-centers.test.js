@@ -7,14 +7,9 @@ const dcs = require('./lib/data-centers');
 
 const REPO = path.resolve(__dirname, '..');
 
-function tempCopy() {
+function tempRoot() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dc-test-'));
-  for (const rel of dcs.MCP_CONFIG_FILES) {
-    const dest = path.join(dir, rel);
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.copyFileSync(path.join(REPO, rel), dest);
-  }
-  fs.writeFileSync(path.join(dir, '.env'), 'WORKATO_API_TOKEN=x\nWORKATO_API_ENDPOINT=https://app.workato.com\n');
+  fs.copyFileSync(path.join(REPO, dcs.MCP_TEMPLATE), path.join(dir, dcs.MCP_TEMPLATE));
   return dir;
 }
 
@@ -42,41 +37,36 @@ test('detectFromUrl', () => {
   assert.strictEqual(dcs.detectFromUrl('not a url'), null);
 });
 
+test('wkRegionArgs uses --region where wk supports it and --base-url otherwise', () => {
+  assert.deepStrictEqual(dcs.wkRegionArgs('eu'), ['--region', 'eu']);
+  assert.deepStrictEqual(dcs.wkRegionArgs('uk'), ['--base-url', 'https://app.uk.workato.com']);
+  assert.deepStrictEqual(dcs.wkRegionArgs('kr'), ['--base-url', 'https://app.kr.workato.com']);
+});
+
+test('template references the profile variable and never a literal token', () => {
+  const text = fs.readFileSync(path.join(REPO, dcs.MCP_TEMPLATE), 'utf-8');
+  assert.match(text, /Bearer \$\{WORKATO_CODE_DEV\}/);
+  assert.doesNotMatch(text, /headersHelper|oauth/i);
+});
+
 for (const dc of Object.keys(dcs.DATA_CENTERS)) {
-  test(`applyDataCenter(${dc}) rewrites every config and .env, and is idempotent`, () => {
-    const root = tempCopy();
-    const first = dcs.applyDataCenter(root, dc);
-    const u = dcs.urlsFor(dc);
-    assert.deepStrictEqual(first.missing, []);
-
-    for (const rel of dcs.MCP_CONFIG_FILES) {
-      const text = fs.readFileSync(path.join(root, rel), 'utf-8');
-      const hits = text.match(/https:\/\/(?:app|www)(?:\.[a-z]+)?\.workato\.com\/(?:mcp|airo_mcp)\b/g) || [];
-      assert.ok(hits.length > 0, `${rel} has MCP URLs`);
-      for (const h of hits) {
-        assert.ok([u.developerApiMcp, u.airoMcp].includes(h), `${rel}: unexpected ${h} for ${dc}`);
-      }
-      if (rel.endsWith('.json')) JSON.parse(text); // still valid JSON
+  test(`renderMcpConfig(${dc}) writes valid .mcp.json with the right URLs and header auth`, () => {
+    const root = tempRoot();
+    const { urls } = dcs.renderMcpConfig(root, dc);
+    const cfg = JSON.parse(fs.readFileSync(path.join(root, dcs.MCP_OUTPUT), 'utf-8'));
+    assert.strictEqual(cfg.mcpServers['workato-developer-api'].url, urls.developerApiMcp);
+    assert.strictEqual(cfg.mcpServers['workato-airo'].url, urls.airoMcp);
+    for (const server of Object.values(cfg.mcpServers)) {
+      assert.strictEqual(server.headers.Authorization, 'Bearer ${WORKATO_CODE_DEV}');
     }
-
-    const env = fs.readFileSync(path.join(root, '.env'), 'utf-8');
-    assert.match(env, new RegExp(`^WORKATO_DATA_CENTER=${dc}$`, 'm'));
-    assert.match(env, new RegExp(`^WORKATO_REGION=${dc}$`, 'm'));
-    assert.match(env, new RegExp(`^WORKATO_API_ENDPOINT=${u.apiEndpoint}$`, 'm'));
-    assert.match(env, /^WORKATO_API_TOKEN=x$/m); // token untouched
-    assert.strictEqual(dcs.currentDataCenter(root), dc);
-
-    assert.deepStrictEqual(dcs.applyDataCenter(root, dc).changed, []); // second run is a no-op
+    assert.ok(!fs.existsSync(path.join(root, '.env')), 'no .env is ever created');
   });
 }
 
-test('switching data centres round-trips cleanly', () => {
-  const root = tempCopy();
-  dcs.applyDataCenter(root, 'eu');
-  dcs.applyDataCenter(root, 'us');
-  for (const rel of dcs.MCP_CONFIG_FILES) {
-    const orig = fs.readFileSync(path.join(REPO, rel), 'utf-8');
-    const now = fs.readFileSync(path.join(root, rel), 'utf-8');
-    if (/app\.workato\.com\/(mcp|airo_mcp)/.test(orig)) assert.strictEqual(now, orig, `${rel} round-trips`);
-  }
+test('re-rendering for another data centre replaces the URLs', () => {
+  const root = tempRoot();
+  dcs.renderMcpConfig(root, 'eu');
+  dcs.renderMcpConfig(root, 'us');
+  const cfg = JSON.parse(fs.readFileSync(path.join(root, dcs.MCP_OUTPUT), 'utf-8'));
+  assert.strictEqual(cfg.mcpServers['workato-airo'].url, 'https://app.workato.com/airo_mcp');
 });

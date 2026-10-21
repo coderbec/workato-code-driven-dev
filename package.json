@@ -5,9 +5,6 @@
   "main": "index.js",
   "scripts": {
     "setup": "node scripts/setup.js",
-    "setup:token": "node scripts/set-token.js",
-    "setup:data-center": "node scripts/configure-data-center.js",
-    "setup:wk-profile": "node scripts/setup-wk-profile.js",
     "test": "node --test scripts/data-centers.test.js",
     "lint": "echo 'Linting recipes... (recipe-linter not available in npm registry)'",
     "lint:fix": "echo 'Auto-fixing recipes... (recipe-linter not available in npm registry)'",
@@ -18,7 +15,6 @@
     "wk:push": "cd recipes && wk push",
     "wk:status": "cd recipes && wk status",
     "wk:diff": "cd recipes && wk diff",
-    "wk:auth": "node scripts/setup-wk-profile.js",
     "terraform:init": "terraform -chdir=terraform init",
     "terraform:plan": "terraform -chdir=terraform plan -var-file='environments/dev.tfvars'",
     "terraform:apply": "terraform -chdir=terraform apply -var-file='environments/dev.tfvars'",
@@ -26,9 +22,7 @@
     "azure:login": "az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}",
     "setup:db": "bash scripts/setup-db-connection.sh ${ENVIRONMENT}"
   },
-  "dependencies": {
-    "dotenv": "^16.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "engines": {
     "node": ">=18.0.0"

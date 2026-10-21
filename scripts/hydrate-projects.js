@@ -3,7 +3,13 @@
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
+const { activeProfile } = require('./lib/wk');
+
+const PROFILE = activeProfile();
+if (!PROFILE) {
+  console.error('No active wk profile. Run the guided setup: say "start workato setup" (or /workato-setup) in Claude Code.');
+  process.exit(1);
+}
 
 /**
  * Selectively hydrate (download) recipes from specific projects
@@ -14,8 +20,8 @@ require('dotenv').config();
  */
 
 function getProjectsList() {
-  const profile = process.env.WORKATO_PROFILE || 'workato-dev';
-  try {
+  const profile = PROFILE;
+        try {
     const projectsJSON = execSync(`wk folders list --projects --json --profile ${profile}`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe']
@@ -23,7 +29,7 @@ function getProjectsList() {
     return JSON.parse(projectsJSON);
   } catch (error) {
     console.error('❌ Failed to list projects\n');
-    console.error('Make sure to run setup first: npm run setup:wk-profile');
+    console.error('Make sure to run setup first: say "start workato setup" (or /workato-setup)');
     throw error;
   }
 }
@@ -54,9 +60,8 @@ function hydrateProjects(projectNames) {
       }
       
       // Create wk.toml with proper structure
-      const profile = process.env.WORKATO_PROFILE || 'default';
-      
-      // Get workspace info from wk auth
+      const profile = PROFILE;
+        // Get workspace info from wk auth
       let workspaceInfo = '';
       try {
         const authInfo = execSync(`wk auth status --profile ${profile} --json`, {
@@ -135,7 +140,7 @@ ${workspaceInfo}${syncEntries}`;
       // Make sure wk.toml has a sync entry for this project (wk.toml is only
       // created once, so later projects need their entry added; existing ones are skipped)
       try {
-        const profile = process.env.WORKATO_PROFILE || 'default';
+        const profile = PROFILE;
         execSync(
           `wk sync add --sync "${project.name}:${projectDirName}" --no-input --profile ${profile}`,
           {
@@ -149,7 +154,7 @@ ${workspaceInfo}${syncEntries}`;
 
       // Pull recipes for this folder using wk pull
       try {
-        const profile = process.env.WORKATO_PROFILE || 'default';
+        const profile = PROFILE;
         // wk pull uses the sync entry server_path (project name)
         execSync(
           `wk pull --folder "${project.name}" --force --profile ${profile}`,
@@ -169,7 +174,7 @@ ${workspaceInfo}${syncEntries}`;
       // Get recipe count to confirm
       let recipeCount = 0;
       try {
-        const profile = process.env.WORKATO_PROFILE || 'workato-dev';
+        const profile = PROFILE;
         const recipesJSON = execSync(
           `wk recipes list --folder ${project.id} --json --per-page 1000 --profile ${profile}`,
           {

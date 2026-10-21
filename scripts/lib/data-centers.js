@@ -24,17 +24,9 @@ const DATA_CENTERS = {
   trial: { label: 'Developer Sandbox (trial)',   apiHost: 'app.trial.workato.com', mcpHost: 'app.trial.workato.com' },
 };
 
-// Files whose MCP server URLs are rewritten. Paths are relative to the repo root.
-const MCP_CONFIG_FILES = [
-  '.mcp.json',
-  'claude_desktop_config.json',
-  '.opencode/opencode.jsonc',
-  '.opencode/mcps/claude-desktop-config.json',
-  '.opencode/mcps/cursor-config.json',
-  '.opencode/mcps/generic-mcp-client-config.json',
-];
-
-const MCP_URL_PATTERN = /https:\/\/(?:app|www)(?:\.[a-z]+)?\.workato\.com\/(mcp|airo_mcp)(?![A-Za-z0-9_])/g;
+// Claude Code reads the generated .mcp.json; it is rendered from the committed template.
+const MCP_TEMPLATE = '.mcp.template.json';
+const MCP_OUTPUT = '.mcp.json';
 
 function normalise(code) {
   const dc = String(code || '').trim().toLowerCase();
@@ -71,56 +63,30 @@ function detectFromUrl(url) {
   }
 }
 
-/** Rewrite MCP server URLs in every known config file under `root`. Returns the files changed. */
-function applyMcpUrls(root, code) {
-  const { developerApiMcp, airoMcp } = urlsFor(code);
-  const changed = [];
-  const missing = [];
-  for (const rel of MCP_CONFIG_FILES) {
-    const file = path.join(root, rel);
-    if (!fs.existsSync(file)) { missing.push(rel); continue; }
-    const before = fs.readFileSync(file, 'utf-8');
-    const after = before.replace(MCP_URL_PATTERN, (_m, kind) => (kind === 'mcp' ? developerApiMcp : airoMcp));
-    if (after !== before) {
-      fs.writeFileSync(file, after);
-      changed.push(rel);
-    }
-  }
-  return { changed, missing };
-}
-
-/** Set KEY=value lines in a .env file (replacing existing keys, appending new ones). */
-function upsertEnv(envPath, values) {
-  let content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-  for (const [key, value] of Object.entries(values)) {
-    const line = `${key}=${value}`;
-    const re = new RegExp(`^${key}=.*$`, 'm');
-    if (re.test(content)) content = content.replace(re, line);
-    else content += (content && !content.endsWith('\n') ? '\n' : '') + line + '\n';
-  }
-  fs.writeFileSync(envPath, content);
-}
-
-/** Apply a data centre choice: .env values plus every MCP config file. */
-function applyDataCenter(root, code) {
+/**
+ * Render .mcp.template.json to .mcp.json for a data centre.
+ * The template uses {{DEVELOPER_API_MCP_URL}} and {{AIRO_MCP_URL}} placeholders.
+ * The token is never written: the template references ${WORKATO_CODE_DEV}, which Claude Code expands.
+ */
+function renderMcpConfig(root, code) {
   const u = urlsFor(code);
-  upsertEnv(path.join(root, '.env'), {
-    WORKATO_DATA_CENTER: u.dc,
-    WORKATO_REGION: u.region,
-    WORKATO_API_ENDPOINT: u.apiEndpoint,
-  });
-  return { urls: u, ...applyMcpUrls(root, u.dc) };
+  const template = fs.readFileSync(path.join(root, MCP_TEMPLATE), 'utf-8');
+  const rendered = template
+    .replace(/\{\{DEVELOPER_API_MCP_URL\}\}/g, u.developerApiMcp)
+    .replace(/\{\{AIRO_MCP_URL\}\}/g, u.airoMcp);
+  JSON.parse(rendered); // fail loudly rather than write a broken config
+  const out = path.join(root, MCP_OUTPUT);
+  fs.writeFileSync(out, rendered);
+  return { urls: u, file: MCP_OUTPUT };
 }
 
-/** Read the currently configured data centre from .env, or null. */
-function currentDataCenter(root) {
-  const envPath = path.join(root, '.env');
-  if (!fs.existsSync(envPath)) return null;
-  const m = fs.readFileSync(envPath, 'utf-8').match(/^WORKATO_DATA_CENTER=(\S+)\s*$/m);
-  return m && DATA_CENTERS[m[1].toLowerCase()] ? m[1].toLowerCase() : null;
+/** Arguments for `wk auth login`: wk validates --region against a shorter list, so fall back to --base-url. */
+const WK_REGIONS = ['us', 'eu', 'jp', 'au', 'sg', 'il', 'cn', 'trial'];
+function wkRegionArgs(code) {
+  const u = urlsFor(code);
+  return WK_REGIONS.includes(u.dc) ? ['--region', u.region] : ['--base-url', u.apiEndpoint];
 }
 
 module.exports = {
-  DATA_CENTERS, MCP_CONFIG_FILES, urlsFor, detectFromUrl, applyMcpUrls,
-  applyDataCenter, currentDataCenter, upsertEnv,
+  DATA_CENTERS, MCP_TEMPLATE, MCP_OUTPUT, urlsFor, detectFromUrl, renderMcpConfig, wkRegionArgs,
 };

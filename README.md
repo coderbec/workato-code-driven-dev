@@ -1,3 +1,13 @@
+> ## 🚀 Start here: say **`start workato setup`**
+> Clone this repo, open the folder in a terminal (the VS Code terminal is fine), run `claude`, then type
+> **`start workato setup`** (or the slash command **`/workato-setup`**). Claude walks you through everything and tells you what it is doing at each step:
+> 1. checks your `WORKATO_CODE_DEV` profile variable (your Workato API token) and shows you how to create it if missing
+> 2. asks your data centre and configures the Developer API MCP and AIRO MCP (header auth, written last)
+> 3. installs Workato Developer Labs (wk CLI, Recipe Linter, Developer Skills, Recipe Visualizer) and creates a wk profile, then asks you to **restart Claude** so the MCPs connect
+> 4. after the restart, confirms both MCPs are connected and hydrates the projects you choose
+>
+> No `.env` file is used anywhere. The token lives only in the `WORKATO_CODE_DEV` variable of your OS profile.
+
 <div align="center">
 
 # 🚀 Workato Code-Driven Development
@@ -33,7 +43,7 @@ This is a **production-ready template** for managing Workato integrations using 
 ✅ **Recipe Linter** — Enforce naming conventions, error handling, no hardcoded secrets  
 ✅ **Terraform + Azure** — Provision SQL Database, Key Vault, storage  
 ✅ **Claude Desktop Integration** — Use MCPs for AI-powered development  
-✅ **Pre-configured** — Just add your API token and go
+✅ **Guided setup** — Say `start workato setup` and Claude does the rest
 
 ---
 
@@ -41,80 +51,49 @@ This is a **production-ready template** for managing Workato integrations using 
 
 ### Prerequisites
 
-- ✅ **Node.js** 18+ (`node --version`)
-- ✅ **npm** (`npm --version`)
-- ✅ **Git** (`git --version`)
-- ✅ **Terraform** 1.0+ (`terraform --version`)
-- ✅ **Azure CLI** (`az --version`)
-- ✅ **Workato Account** (Direct, with API token)
+- ✅ **Node.js** 18+ (`node --version`) and **Git** (`git --version`)
+- ✅ **Claude Code** (`claude`)
+- ✅ **Homebrew** (macOS) or **Scoop** (Windows), used to install the wk CLI
+- ✅ **Workato API token** from Workspace admin > API clients (role with **Developer API MCP** and **AIRO MCP** tools)
+- ⚙️ Terraform 1.0+ and Azure CLI, only if you use the optional Azure infrastructure
 
-### Installation (5 minutes)
+### Guided setup (about 5 minutes)
 
-#### 1️⃣ Clone & Setup
 ```bash
 git clone https://github.com/your-org/workato-code-driven-dev.git
 cd workato-code-driven-dev
-npm install
-node scripts/setup.js
+claude
 ```
+Then type **`start workato setup`** (or **`/workato-setup`**). It runs in two phases with one restart of Claude in the middle (MCP servers only connect when Claude starts):
 
-#### 2️⃣ Choose Data Centre & Configure Secrets
-`npm run setup` asks which Workato data centre you use (us, eu, jp, sg, au, il, kr, uk, trial) and points every MCP config and `.env` at the right URLs. Change it any time with `npm run setup:data-center`.
-```bash
-[ -f .env ] || cp .env.example .env
-npm run setup:token   # paste your API token (hidden input); it is checked, saved to .env and the wk profile is refreshed. Re-run any time the token changes.
-# Edit .env with:
-# - WORKATO_API_TOKEN (Workspace Admin > API clients)
-# - WORKATO_WORKSPACE_ID (your workspace ID)
-# - Azure credentials (if using Terraform)
-```
+| Phase | # | Step | What it does |
+|-------|---|------|--------------|
+| A: before restart | 1 | Profile variable | Checks `WORKATO_CODE_DEV`. If missing, it gives the exact command for macOS or Windows to run in a **new** terminal in the same folder, then to restart Claude and rerun the phrase |
+| | 2 | Data centre | Asks us / eu / jp / sg / au / il / kr / uk / trial |
+| | 3 | Developer Labs | Installs wk CLI, Recipe Linter, Developer Skills and Recipe Visualizer; one failing never blocks the rest |
+| | 4 | wk profile | Creates a new `workato-code-dev-N` profile (never overwrites) and makes it the default |
+| | 5 | MCP config | Generates `.mcp.json` for the Developer API MCP and AIRO MCP, header auth `Bearer ${WORKATO_CODE_DEV}` (no OAuth) |
+| Restart | 6 | **Restart Claude** | Exit, run `claude` again in the same folder, approve the two MCP servers, run `/mcp` and check both say **connected** |
+| B: after restart | 7 | Confirm MCPs | Checks the MCP tools are present; when both are connected you are ready to go |
+| | 8 | Projects | Lists your projects through the Developer API MCP so you can pick which to hydrate |
+| | 9 | Hydrate | Pulls the chosen projects into `recipes/` (local, gitignored) with `wk` |
 
-#### 3️⃣ Authenticate
-```bash
-npm run wk:auth
-npm run wk:status
-```
+After the restart, say **`continue workato setup`** and it picks up at step 7. If a server isn't connected, use `/mcp` and **Reconnect** (never OAuth); the skill lists the usual causes: variable not visible to that terminal, token from a different data centre, or an API client role without the MCP tools.
 
-#### 4️⃣ Discover Your Projects (NEW: Selective Hydration)
-Use Claude or your AI client to discover all projects:
-```bash
-# Using Claude Desktop / OpenCode / Cursor:
-Claude: "I'm setting up for the first time, show me all projects"
-→ Returns full inventory with recipe counts and activity status
-→ You can then choose which projects to hydrate
-```
+**Setting the variable yourself** (what step 1 will ask you to do, in a new terminal, then restart VS Code and `claude`):
 
-Or use CLI directly:
-```bash
-npm run wk:pull --project "Data Sync"
-npm run wk:pull --project "Customer API"
-```
+| OS | Command |
+|----|---------|
+| macOS (zsh) | `echo 'export WORKATO_CODE_DEV="<token>"' >> ~/.zshrc` |
+| Windows (PowerShell / cmd / VS Code terminal) | `setx WORKATO_CODE_DEV "<token>"` |
 
-#### 5️⃣ Hydrate Selected Projects to Git
-```bash
-# Claude will guide you through this, or manually:
-git add recipes/
-git commit -m "Initial hydration: Data Sync & Customer API"
-git push
-```
+> VS Code terminals only see variables that existed when VS Code started, so fully quit and reopen VS Code after setting it.
 
-#### 6️⃣ Add More Projects Later (Iterative Approach)
-After initial setup, you can add more projects without re-syncing:
-```bash
-Claude: "Which projects can I still hydrate?"
-Claude: "Hydrate Internal Tools to Git"
-→ Downloads only new projects
-→ Doesn't re-pull already hydrated recipes
-```
+### Later
 
-#### 7️⃣ Optional: Deploy Infrastructure
-```bash
-cp terraform/environments/dev.tfvars.example terraform/environments/dev.tfvars
-# Edit with your Azure credentials
-npm run terraform:init
-npm run terraform:plan
-npm run terraform:apply
-```
+- Add more projects: ask Claude "Which projects can I still hydrate?" or run `npm run hydrate:interactive`
+- Day-to-day sync: `npm run wk:pull`, `wk:push`, `wk:status`, `wk:diff`
+- Optional Azure infrastructure: `cp terraform/environments/dev.tfvars.example terraform/environments/dev.tfvars`, edit, then `npm run terraform:init`, `terraform:plan`, `terraform:apply`
 
 **Done!** You're ready to develop 🎉
 
@@ -190,14 +169,13 @@ Use Claude Desktop, OpenCode, or Cursor with these commands:
 
 ```bash
 # Development
-npm run setup              # Run setup wizard
+npm run setup              # Shows how to start the guided setup
 npm run lint              # Check recipe syntax & standards
 npm run lint:fix          # Auto-fix linting issues
 
 # Workato CLI (wk) - Discovery & Hydration
-npm run wk:auth           # Authenticate with Workato
 npm run wk:pull           # Pull recipes from Workato to Git
-npm run wk:pull --project "Project Name"  # Pull specific project
+npm run hydrate:projects -- "Project Name"  # Pull specific project
 npm run wk:push           # Push recipes from Git to Workato
 npm run wk:status         # Check sync status
 npm run wk:diff           # Show differences
@@ -217,8 +195,9 @@ npm run setup:db          # Setup database connection
 
 ```bash
 # Authentication
-wk auth login --api-token $WORKATO_API_TOKEN
-wk auth logout
+wk auth list                  # see profiles
+wk auth switch <profile>     # change the default
+wk auth status
 
 # Recipe operations
 wk pull recipes/              # Sync from Workato
@@ -244,7 +223,7 @@ az keyvault secret show --vault-name kv-workato-dev --name db-password
 ```
 workato-code-driven-dev/
 ├── README.md                          # This file (you are here)
-├── .env.example                       # Environment variables template
+├── .mcp.template.json                 # MCP config template (setup renders .mcp.json from it)
 ├── .gitignore                         # Git ignore rules
 ├── mcp.json                           # MCP server configuration (legacy)
 ├── claude_desktop_config.json         # Claude Desktop MCP setup
@@ -318,7 +297,7 @@ This project includes specialized skills for Claude Desktop, OpenCode, and Curso
 - ✅ Selective hydration (don't download everything at once)
 - ✅ Incremental workflow (add more projects later without re-syncing existing ones)
 - ✅ Uses NEW wk CLI profile per customer (no default profiles shared)
-- ✅ Saves profile name to .env for reproducibility
+- ✅ Uses the active wk profile (no stored settings)
 
 **Location**: `.opencode/skills/workato-project-cataloguer/`
 
@@ -416,13 +395,13 @@ All MCP servers use **header-based authentication** (not token in body):
 ### Secrets Management
 
 ✅ **Do**:
-- Store API tokens in `.env`
+- Keep the API token only in the `WORKATO_CODE_DEV` profile variable of your OS
 - Use Azure Key Vault for production secrets
 - Rotate tokens regularly
 - Use minimal-privilege API roles
 
 ❌ **Don't**:
-- Commit `.env` to Git
+- Put tokens in any file (including `.env`), or commit them to Git
 - Store secrets in recipe files
 - Hardcode credentials in code
 - Share tokens in Slack/email
@@ -431,7 +410,7 @@ All MCP servers use **header-based authentication** (not token in body):
 
 Set up GitHub Actions with:
 ```bash
-WORKATO_API_TOKEN=...
+WORKATO_CODE_DEV=...
 AZURE_CLIENT_ID=...
 AZURE_CLIENT_SECRET=...
 ```
@@ -656,15 +635,15 @@ See [.opencode/README.md](.opencode/README.md) for client-specific setup.
 
 #### "AI client doesn't show Cataloguer skill"
 1. Verify MCP servers are configured (see `.opencode/SETUP-BY-CLIENT.md`)
-2. Check environment variables are set: `WORKATO_API_TOKEN`, `WORKATO_WORKSPACE_ID`
+2. Check `WORKATO_CODE_DEV` is set (say `start workato setup`; step 1 checks it)
 3. Restart your AI client (Claude Desktop, OpenCode, or Cursor)
 4. See: `.opencode/SETUP-BY-CLIENT.md` → Troubleshooting section
 
 #### "Hydration command not working"
-1. Ensure wk CLI is installed and authenticated: `npm run wk:auth`
+1. Ensure wk CLI is installed and authenticated: say `start workato setup` (steps 4 and 5)
 2. Check wk CLI status: `npm run wk:status`
 3. Verify project names exist and are exact matches
-4. Try direct CLI command: `npm run wk:pull --project "Exact Project Name"`
+4. Try: `npm run hydrate:projects -- "Exact Project Name"`
 
 #### "Cannot find module 'mcp-remote'"
 ```bash
@@ -677,8 +656,8 @@ npx mcp-remote [rest of command]
 
 #### "Authentication failed"
 ```bash
-npm run wk:auth
-# Re-enter credentials
+wk auth status
+# If it fails, rotate WORKATO_CODE_DEV and say: start workato setup (creates a fresh profile)
 ```
 
 #### "Linter errors"
@@ -701,7 +680,7 @@ npm run wk:push
 npm run wk:status
 
 # Try with exact project name (case-sensitive)
-npm run wk:pull --project "Data Sync"
+npm run hydrate:projects -- "Data Sync"
 
 # If still failing, try full sync
 npm run wk:pull
@@ -710,7 +689,7 @@ npm run wk:pull
 #### "Terraform fails to initialize"
 ```bash
 npm run terraform:init
-# Ensure all variables in .env are set
+# Ensure your Terraform variables are set (terraform/environments/*.tfvars)
 ```
 
 ### Client-Specific Issues
@@ -718,8 +697,7 @@ npm run terraform:init
 #### Claude Desktop Won't Connect
 1. Restart Claude Desktop
 2. Check `~/.config/Claude/claude_desktop_config.json`
-3. Verify `WORKATO_API_TOKEN` is set
-4. Run: `node -e "console.log(process.env.WORKATO_API_TOKEN)"`
+3. Verify `WORKATO_CODE_DEV` is set (do not print it): `node scripts/setup/check-profile-var.js`
 
 #### OpenCode Issues
 - See: https://opencode.ai/docs

@@ -3,7 +3,13 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+const { activeProfile } = require('./lib/wk');
+
+const PROFILE = activeProfile();
+if (!PROFILE) {
+  console.error('No active wk profile. Run the guided setup: say "start workato setup" (or /workato-setup) in Claude Code.');
+  process.exit(1);
+}
 
 /**
  * Discover all projects/folders in your Workato workspace
@@ -13,22 +19,13 @@ require('dotenv').config();
  *   npm run discover:projects
  *   node scripts/discover-projects.js
  * 
- * Note: Requires wk CLI setup first. Run: npm run setup:wk-profile
+ * Note: Requires wk CLI setup first. Run: say "start workato setup" (or /workato-setup)
  */
 
 async function discoverProjects() {
   try {
     // Check if wk profile is set up
-    let profile = process.env.WORKATO_PROFILE || 'workato-dev';
-    
-    // Handle variable references like ${MY_PROFILE_VAR}
-    if (profile && profile.startsWith('${') && profile.endsWith('}')) {
-      const varName = profile.slice(2, -1);
-      const resolvedProfile = process.env[varName];
-      if (resolvedProfile) {
-        profile = resolvedProfile;
-      }
-    }
+    const profile = PROFILE;
     
     console.log('\n🔍 Discovering projects in your Workato workspace...\n');
     console.log(`📌 Using profile: ${profile}\n`);
@@ -44,8 +41,8 @@ async function discoverProjects() {
     } catch (error) {
       console.error('❌ Failed to list projects. Make sure:\n');
       console.error('   1. wk CLI is installed: which wk');
-      console.error('   2. Profile is set up: npm run setup:wk-profile');
-      console.error('   3. .env file has WORKATO_API_TOKEN and WORKATO_PROFILE\n');
+      console.error('   2. Profile is set up: say "start workato setup" (or /workato-setup)');
+      console.error('   3. WORKATO_CODE_DEV is set (the guided setup checks this)\n');
       console.error('Error details:', error.message);
       process.exit(1);
     }

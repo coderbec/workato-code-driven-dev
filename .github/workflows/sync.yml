@@ -38,8 +38,7 @@ jobs:
       - name: Pull recipes from Workato
         if: github.event.inputs.direction == 'pull'
         env:
-          WORKATO_API_TOKEN: ${{ secrets.WORKATO_API_TOKEN }}
-          WORKATO_WORKSPACE_ID: ${{ secrets.WORKATO_WORKSPACE_ID }}
+          WORKATO_CODE_DEV: ${{ secrets.WORKATO_CODE_DEV }}
         run: |
           npm run wk:pull
           
@@ -55,8 +54,7 @@ jobs:
       - name: Push recipes to Workato
         if: github.event.inputs.direction == 'push'
         env:
-          WORKATO_API_TOKEN: ${{ secrets.WORKATO_API_TOKEN }}
-          WORKATO_WORKSPACE_ID: ${{ secrets.WORKATO_WORKSPACE_ID }}
+          WORKATO_CODE_DEV: ${{ secrets.WORKATO_CODE_DEV }}
         run: |
           npm run wk:push
           echo "✅ Recipes pushed to Workato"

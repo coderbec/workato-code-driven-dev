@@ -128,19 +128,14 @@ Result: Team changes synchronized across Git and Workato
 # 1. Install dependencies
 npm install
 
-# 2. Authenticate with Workato
-npm run wk:auth
+# 2. Authenticate with Workato: say "start workato setup" (or /workato-setup) in Claude Code
 
 # 3. Verify connection
 npm run wk:status
 ```
 
-### Environment Variables
-Requires in `.env` or environment:
-```
-WORKATO_API_TOKEN=your_token_here
-WORKATO_WORKSPACE_ID=your_workspace_id
-```
+### Authentication
+Uses the active wk profile (created by the guided setup as `workato-code-dev-N`) from the `WORKATO_CODE_DEV` profile variable. There is no `.env`.
 
 ## Technical Details
 
@@ -176,8 +171,9 @@ npm run wk:diff
 # Push changes
 npm run wk:push
 
-# Re-authenticate
-npm run wk:auth
+# Check / change the active profile
+wk auth status
+wk auth switch <profile>
 
 # Check CLI version
 wk --version
@@ -190,8 +186,8 @@ npm run lint:fix
 
 ### "Authentication failed"
 ```
-npm run wk:auth
-# Re-enter credentials
+wk auth status
+# If it fails: rotate WORKATO_CODE_DEV, then say "start workato setup" (creates a fresh profile)
 ```
 
 ### "Linter errors before push"
@@ -209,8 +205,8 @@ npm run wk:diff
 
 ### "Workspace not recognized"
 ```
-# Check WORKATO_WORKSPACE_ID in .env
-# Verify ID format
+# Check the active profile's workspace
+wk auth status
 npm run wk:status
 ```
 

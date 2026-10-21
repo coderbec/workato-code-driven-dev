@@ -3,7 +3,13 @@
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
+const { activeProfile } = require('./lib/wk');
+
+const PROFILE = activeProfile();
+if (!PROFILE) {
+  console.error('No active wk profile. Run the guided setup: say "start workato setup" (or /workato-setup) in Claude Code.');
+  process.exit(1);
+}
 
 /**
  * Interactive project hydration
@@ -68,8 +74,8 @@ async function confirmSelection(selectedProjects) {
 }
 
 function getProjectsList() {
-  const profile = process.env.WORKATO_PROFILE || 'workato-dev';
-  try {
+  const profile = PROFILE;
+        try {
     const projectsJSON = execSync(`wk folders list --projects --json --profile ${profile}`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe']
@@ -77,7 +83,7 @@ function getProjectsList() {
     return JSON.parse(projectsJSON);
   } catch (error) {
     console.error('❌ Failed to list projects\n');
-    console.error('Make sure to run setup first: npm run setup:wk-profile');
+    console.error('Make sure to run setup first: say "start workato setup" (or /workato-setup)');
     throw error;
   }
 }
@@ -110,9 +116,8 @@ function hydrateProjects(projectNames) {
 
     try {
       console.log(`📥 Hydrating: ${project.name}...`);
-      const profile = process.env.WORKATO_PROFILE || 'default';
-
-      const projectDir = path.join('recipes', project.name.toLowerCase().replace(/\s+/g, '-'));
+      const profile = PROFILE;
+        const projectDir = path.join('recipes', project.name.toLowerCase().replace(/\s+/g, '-'));
       
       if (!fs.existsSync(projectDir)) {
         fs.mkdirSync(projectDir, { recursive: true });
@@ -194,9 +199,8 @@ async function main() {
     // Discover projects
     console.log('\n🔍 Discovering projects...\n');
     
-    const profile = process.env.WORKATO_PROFILE || 'workato-dev';
-    
-    let projects = [];
+    const profile = PROFILE;
+        let projects = [];
     try {
       const projectsJSON = execSync(`wk folders list --projects --json --profile ${profile}`, {
         encoding: 'utf-8',
@@ -206,8 +210,8 @@ async function main() {
     } catch (error) {
       console.error('\n❌ Failed to discover projects. Make sure:\n');
       console.error('   1. wk CLI is installed: which wk');
-      console.error('   2. Profile is set up: npm run setup:wk-profile');
-      console.error('   3. .env file has WORKATO_API_TOKEN and WORKATO_PROFILE\n');
+      console.error('   2. Profile is set up: say "start workato setup" (or /workato-setup)');
+      console.error('   3. WORKATO_CODE_DEV is set (the guided setup checks this)\n');
       rl.close();
       process.exit(1);
     }
@@ -315,7 +319,7 @@ async function main() {
     if (!fs.existsSync(wkTomlPath)) {
       try {
         console.log('\n📋 Initializing wk project in recipes directory...\n');
-        const profile = process.env.WORKATO_PROFILE || process.env.WK_PROFILE || 'default';
+        const profile = PROFILE;
         execSync(
           `wk init --name workato --projects-dir . --profile ${profile} --no-input`,
           {

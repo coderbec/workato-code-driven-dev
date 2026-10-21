@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "workato-developer-api": {
+      "type": "http",
+      "url": "{{DEVELOPER_API_MCP_URL}}",
+      "headers": {
+        "Authorization": "Bearer ${WORKATO_CODE_DEV}"
+      }
+    },
+    "workato-airo": {
+      "type": "http",
+      "url": "{{AIRO_MCP_URL}}",
+      "headers": {
+        "Authorization": "Bearer ${WORKATO_CODE_DEV}"
+      }
+    }
+  }
+}

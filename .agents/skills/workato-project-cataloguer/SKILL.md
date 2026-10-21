@@ -283,8 +283,7 @@ Enter project numbers to hydrate (comma-separated, e.g., "1,3,5"): 1,2
 ### Requirements
 - Node.js 18+ (already installed)
 - `wk CLI` installed globally (`/opt/homebrew/bin/wk`)
-- `WORKATO_API_TOKEN` configured in `.env`
-- `WORKATO_WORKSPACE_ID` configured in `.env`
+- `WORKATO_CODE_DEV` profile variable set and a wk profile created (run the guided setup: "start workato setup")
 
 ### Output formats
 - Console (human-readable project lists)
@@ -431,9 +430,8 @@ Result: 51 recipes now in Git (9 newly added)
 
 ## Setup Requirements
 
-1. Configure `WORKATO_API_TOKEN` in environment
-2. Configure `WORKATO_WORKSPACE_ID` in environment
-3. Ensure `workato-developer-api` MCP server is configured
+1. Run the guided setup ("start workato setup"), which sets up `WORKATO_CODE_DEV` and the wk profile
+2. Ensure `workato-developer-api` MCP server is configured
 
 ## Workflow: First Setup vs. Ongoing
 
