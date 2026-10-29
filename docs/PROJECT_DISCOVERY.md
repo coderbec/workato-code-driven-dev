@@ -414,7 +414,7 @@ npm run wk:diff          # See what changed
 
 Check the Cataloguer Skill documentation:
 ```bash
-open .opencode/skills/workato-project-cataloguer/SKILL.md
+open .agents/skills/workato-project-cataloguer/SKILL.md
 ```
 
 Or review the scripts directly:

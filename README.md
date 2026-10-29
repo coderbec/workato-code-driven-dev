@@ -250,24 +250,15 @@ workato-code-driven-dev/
 │   ├── setup.js                       # Setup wizard
 │   └── setup-db-connection.sh         # Database setup (TODO)
 │
-├── .opencode/                         # ⭐ Universal AI client config (RECOMMENDED)
-│   ├── opencode.jsonc                 # Config for OpenCode (auto-detected)
-│   ├── README.md                      # Setup guide
-│   ├── SETUP-BY-CLIENT.md             # Client-specific instructions
-│   ├── COMPATIBILITY.md               # Verification details
-│   ├── mcps/                          # MCP configs per client
-│   │   ├── claude-desktop-config.json
-│   │   ├── cursor-config.json
-│   │   └── generic-mcp-client-config.json
-│   └── skills/                        # Skill definitions
-│       ├── workato-project-cataloguer/SKILL.md
-│       └── workato-cli-orchestrator/SKILL.md
+├── opencode.jsonc                     # OpenCode config (auto-detected)
 │
-├── .claude/                           # 🤖 Claude Desktop (legacy)
+├── .agents/skills/                    # ⭐ The only copy of the skills (read by OpenCode, Codex, Cursor)
+│   ├── workato-project-cataloguer/SKILL.md
+│   └── workato-cli-orchestrator/SKILL.md
+│
+├── .claude/                           # 🤖 Claude Code
 │   ├── claude.md                      # Claude configuration guide
-│   └── skills/                        # Claude skills
-│       ├── workato-project-cataloguer.md
-│       └── workato-cli-orchestrator.md
+│   └── skills -> ../.agents/skills    # Symlink, not a copy
 │
 └── .github/                           # 🚀 GitHub Actions (TODO)
     ├── workflows/
@@ -276,7 +267,7 @@ workato-code-driven-dev/
     │   └── deploy.yml
 ```
 
-**ℹ️ Note**: The `.opencode/` directory is the recommended configuration for all AI clients. The `.claude/` directory is maintained for backward compatibility.
+**ℹ️ Note**: Skills live once, in `.agents/skills/`. OpenCode reads that folder directly and `.claude/skills` is a symlink to it, so there is nothing to keep in sync.
 
 ---
 
@@ -299,7 +290,7 @@ This project includes specialized skills for Claude Desktop, OpenCode, and Curso
 - ✅ Uses NEW wk CLI profile per customer (no default profiles shared)
 - ✅ Uses the active wk profile (no stored settings)
 
-**Location**: `.opencode/skills/workato-project-cataloguer/`
+**Location**: `.agents/skills/workato-project-cataloguer/`
 
 ---
 
@@ -317,7 +308,7 @@ This project includes specialized skills for Claude Desktop, OpenCode, and Curso
 - ✅ Status reporting (shows what changed and what's pending)
 - ✅ Validation (checks syntax and standards before deployment)
 
-**Location**: `.opencode/skills/workato-cli-orchestrator/`
+**Location**: `.agents/skills/workato-cli-orchestrator/`
 
 ---
 
@@ -335,7 +326,7 @@ This project includes specialized skills for Claude Desktop, OpenCode, and Curso
 
 **Say**: "Set up a Teams bot" (needs Node 22.12+, the `teams` CLI, `az login`, and custom app upload enabled in your tenant; preflight checks all of this).
 
-**Location**: `.agents/skills/workato-teams-bot-setup/` (`.claude/skills` and `.opencode/skills` are symlinks to `.agents/skills`). Start with `SKILL.md`.
+**Location**: `.agents/skills/workato-teams-bot-setup/` (`.claude/skills` is a symlink to `.agents/skills`). Start with `SKILL.md`.
 
 ---
 
@@ -400,7 +391,7 @@ AZURE_CLIENT_SECRET=...
 
 ```
 1. Set up your AI client (OpenCode, Claude Desktop, or Cursor)
-   See: .opencode/SETUP-BY-CLIENT.md
+   See: `.claude/claude.md` (Claude) or `opencode.jsonc` (OpenCode)
 
 2. Ask your AI client: "I'm setting up for the first time, show me all projects"
    → See all projects with recipe counts and activity status
@@ -565,8 +556,7 @@ Push to `main` branch → GitHub Actions → Deploy
 ```
 
 **Location**: 
-- `.opencode/skills/workato-project-cataloguer/SKILL.md` (OpenCode/Generic)
-- `.claude/skills/workato-project-cataloguer.md` (Claude Desktop)
+- `.agents/skills/workato-project-cataloguer/SKILL.md` (all clients; `.claude/skills` is a symlink to it)
 
 ---
 
@@ -590,19 +580,18 @@ Push to `main` branch → GitHub Actions → Deploy
 ```
 
 **Location**: 
-- `.opencode/skills/workato-cli-orchestrator/SKILL.md` (OpenCode/Generic)
-- `.claude/skills/workato-cli-orchestrator.md` (Claude Desktop)
+- `.agents/skills/workato-cli-orchestrator/SKILL.md` (all clients; `.claude/skills` is a symlink to it)
 
 ---
 
 ### How to Use Skills
 
 These skills are automatically available in:
-- ✅ **OpenCode** — Use `.opencode/opencode.jsonc` (auto-detected)
-- ✅ **Claude Desktop** — Configure MCP servers, use `.claude/skills/`
+- ✅ **OpenCode** — Uses `opencode.jsonc` and reads `.agents/skills/` (auto-detected)
+- ✅ **Claude Code / Claude Desktop** — Configure MCP servers, skills load from `.claude/skills/` (symlink to `.agents/skills/`)
 - ✅ **Cursor IDE** — Configure MCP servers in workspace settings
 
-See [.opencode/README.md](.opencode/README.md) for client-specific setup.
+See [.claude/claude.md](.claude/claude.md) for client-specific setup.
 
 ---
 
@@ -611,10 +600,10 @@ See [.opencode/README.md](.opencode/README.md) for client-specific setup.
 ### AI Client Issues
 
 #### "AI client doesn't show Cataloguer skill"
-1. Verify MCP servers are configured (see `.opencode/SETUP-BY-CLIENT.md`)
+1. Verify MCP servers are configured (see `.claude/claude.md`)
 2. Check `WORKATO_CODE_DEV` is set (say `start workato setup`; step 1 checks it)
 3. Restart your AI client (Claude Desktop, OpenCode, or Cursor)
-4. See: `.opencode/SETUP-BY-CLIENT.md` → Troubleshooting section
+4. See: the Troubleshooting section of `.claude/claude.md`
 
 #### "Hydration command not working"
 1. Ensure wk CLI is installed and authenticated: say `start workato setup` (steps 4 and 5)
@@ -678,10 +667,9 @@ npm run terraform:init
 
 #### OpenCode Issues
 - See: https://opencode.ai/docs
-- Check: `.opencode/README.md` → Troubleshooting
 
 #### Cursor IDE Issues
-- See: `.opencode/SETUP-BY-CLIENT.md` → Cursor IDE section
+- See: the Cursor section of `.claude/claude.md`
 - Verify workspace settings have MCP configuration
 
 ---
@@ -690,11 +678,9 @@ npm run terraform:init
 
 | Document | Purpose |
 |---|---|
-| [.opencode/README.md](.opencode/README.md) | **START HERE** — Universal client setup & overview |
-| [.opencode/SETUP-BY-CLIENT.md](.opencode/SETUP-BY-CLIENT.md) | Step-by-step setup for OpenCode, Claude Desktop, Cursor |
-| [.opencode/COMPATIBILITY.md](.opencode/COMPATIBILITY.md) | Technical verification & compliance |
-| [.opencode/skills/](./opencode/skills/) | Skill documentation (Cataloguer, CLI Orchestrator) |
-| [.claude/claude.md](.claude/claude.md) | Claude Desktop configuration (legacy) |
+| [.claude/claude.md](.claude/claude.md) | **START HERE** — Client setup, skills overview and troubleshooting |
+| [.agents/skills/](.agents/skills/) | Skill documentation (the single copy) |
+| [opencode.jsonc](opencode.jsonc) | OpenCode MCP configuration |
 | [terraform/](terraform/) | Infrastructure as Code configuration |
 | [recipe-templates/](recipe-templates/) | Recipe examples & templates |
 

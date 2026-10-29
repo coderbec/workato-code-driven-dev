@@ -1,6 +1,6 @@
 // OpenCode Configuration - Workato Code-Driven Development
 // Docs: https://opencode.ai/docs/config
-// Skills in .opencode/skills/<name>/SKILL.md are auto-discovered (no registration needed).
+// Skills in .agents/skills/<name>/SKILL.md are auto-discovered (no registration needed).
 // Requires WORKATO_API_TOKEN (and optionally AIRO_API_TOKEN) in your shell environment.
 {
   "$schema": "https://opencode.ai/config.json",
