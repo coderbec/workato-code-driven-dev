@@ -53,6 +53,23 @@ recipes/.wk_cache
 recipes/*
 !recipes/.gitkeep
 
+# Customer-specific Workato material must NEVER be committed, wherever it lands.
+# Enforced by scripts/check-no-customer-assets.sh (pre-commit hook + CI), which
+# also blocks `git add -f`.
+.wk/
+**/.wk/
+wk.toml
+packages/
+*.recipe.json
+*.connection.json
+*.decision_engine_model.json
+*.mcp_server.json
+*.topic.json
+*.workato_db_table.json
+*.custom_adapter.*
+*.agentic_*.json
+*.agentic_genie.png
+
 # Azure
 .azure/
 

@@ -179,6 +179,7 @@ Differences to be aware of:
 - ✅ Use header authentication (not token in body)
 - ✅ Rotate API tokens regularly
 - ✅ Use least-privilege API client roles
+- 🚫 **This repo is public and only holds reusable tooling and skills. Never commit anything hydrated from a Workato workspace** (`recipes/`, `.wk/`, `wk.toml`, `*.recipe.json`, `*.connection.json`, `packages/`, customer names, emails or IDs). It belongs to the customer. `.gitignore` ignores it, and `scripts/check-no-customer-assets.sh` (pre-commit hook via `core.hooksPath=.githooks`, plus the `guard` CI workflow) blocks it even with `git add -f`. Never bypass the hook with `--no-verify`.
 
 ## Additional Resources
 

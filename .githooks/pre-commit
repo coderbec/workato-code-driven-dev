@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Enable with: git config core.hooksPath .githooks   (npm install does this via "prepare")
+exec "$(git rev-parse --show-toplevel)/scripts/check-no-customer-assets.sh" staged

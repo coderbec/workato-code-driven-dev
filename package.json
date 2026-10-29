@@ -4,6 +4,8 @@
   "description": "Code-driven Workato development with MCP, Terraform, and Azure integration",
   "main": "index.js",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
+    "check:customer-assets": "bash scripts/check-no-customer-assets.sh tracked",
     "setup": "node scripts/setup.js",
     "test": "node --test scripts/data-centers.test.js",
     "lint": "echo 'Linting recipes... (recipe-linter not available in npm registry)'",
