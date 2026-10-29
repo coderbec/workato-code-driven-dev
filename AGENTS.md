@@ -72,13 +72,13 @@ Edit `~/.config/Codex/claude_desktop_config.json`:
 ```
 
 #### Option B: Cursor IDE (MCP Configuration)
-Create `.Codex/cursor.json` in your workspace settings.
+Create `.cursor/mcp.json` in your workspace settings.
 
 ## Included Skills
 
 Skills live once, in `.agents/skills/<name>/SKILL.md`. `.claude/skills` is a symlink to `../.agents/skills`, so edit only under `.agents/skills/`.
 
-### 1. Workato Project Cataloguer (`.Codex/skills/workato-project-cataloguer/`)
+### 1. Workato Project Cataloguer (`.agents/skills/workato-project-cataloguer/`)
 Automatically discovers and catalogs all recipes in your Workato workspace.
 
 **Commands**:
@@ -91,7 +91,7 @@ Automatically discovers and catalogs all recipes in your Workato workspace.
 
 **npm scripts**: `npm run discover:projects`, `npm run hydrate:projects -- "Name"`, `npm run hydrate:interactive`. Discovery output is cached in `.workato/project-metadata.json`.
 
-### 2. Workato CLI Orchestrator (`.Codex/skills/workato-cli-orchestrator/`)
+### 2. Workato CLI Orchestrator (`.agents/skills/workato-cli-orchestrator/`)
 Manages recipe synchronization between Git and Workato using wk CLI.
 
 **Commands**:
@@ -102,7 +102,7 @@ Manages recipe synchronization between Git and Workato using wk CLI.
 "Check the status of all recipes"
 ```
 
-### 3. Workato Teams Bot Setup (`.Codex/skills/workato-teams-bot-setup/`)
+### 3. Workato Teams Bot Setup (`.agents/skills/workato-teams-bot-setup/`)
 End-to-end setup of a Microsoft Teams Enterprise Workbot: Teams Developer CLI creates the bot, Entra app and Teams app; scopes, files, help command and domains are set in the manifest; the Workato `teams_bot` OAuth profile is created through the Workato API (secret never written to a file); publishing goes through Microsoft Graph (direct for Teams admins, otherwise submitted for review). Run after `start workato setup`. Includes `references/manual-fallback.md` and `scripts/` (preflight, provision, publish).
 
 **Commands**:
@@ -118,7 +118,7 @@ This repo is configured for several agent clients. Keep them aligned when changi
 
 | Folder / file | Client | Notes |
 |---|---|---|
-| `.Codex/` (`AGENTS.md`, `skills/`) | Codex / Codex Desktop | This briefing. Project MCP config is `.mcp.json`. |
+| `AGENTS.md` and `.agents/skills/` | Codex / Codex Desktop | This briefing. Project MCP config is `.mcp.json`. |
 | `opencode.jsonc` (repo root) | OpenCode (also Cursor, generic MCP clients) | The main OpenCode config. Skills are auto-discovered from `.agents/skills/<name>/SKILL.md`. |
 | `claude_desktop_config.json` (repo root) | Codex Desktop | Example config; endpoints follow your data centre (data centre is set by the guided setup) |
 
@@ -126,7 +126,7 @@ Differences to be aware of:
 - OpenCode reads tokens from the shell environment (`{env:WORKATO_API_TOKEN}`); these other-client configs are not yet migrated to `WORKATO_CODE_DEV`. Claude Code uses `.mcp.json` rendered from `.mcp.template.json`, with `Authorization: Bearer ${WORKATO_CODE_DEV}` expanded by Claude Code at startup (so Claude must be started from a terminal that has the variable).
 - Data centre: chosen in the guided setup (step 2) and written into the generated `.mcp.json` URLs (`us` -> `app.workato.com`, others -> `app.<code>.workato.com`; supported: us, eu, jp, sg, au, il, kr, uk, trial). A token only works in its own data centre.
 - Claude Desktop and generic `mcp-remote` configs take the token as `AUTH_HEADER` (`Bearer <token>`) in their `env` block; Cursor uses `${env:WORKATO_API_TOKEN}`.
-- `.agents/skills/workato-teams-bot-setup/AGENTS.md` is a Codex-oriented briefing for that skill.
+- `.agents/skills/workato-teams-bot-setup/CLAUDE.md` is the briefing for that skill; Codex and other clients can read it too.
 
 ## Workflow Examples
 

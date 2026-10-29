@@ -94,8 +94,8 @@ To prevent accidental pushes:
 
 1. Go to **Actions**
 2. Review workflows:
-   - `lint.yml` — Validates recipes on PR
-   - `sync.yml` — Manual sync trigger
+   - `lint.yml` — Validates recipes on PR (placeholder)
+   - `guard.yml` — Fails if any customer-specific Workato file is tracked
    - `terraform.yml` — Plans Terraform changes
 3. Workflows are ready to use
 

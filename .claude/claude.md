@@ -76,7 +76,7 @@ Create `.claude/cursor.json` in your workspace settings.
 
 ## Included Skills
 
-Skills live in `.claude/skills/<name>/SKILL.md` and are mirrored from `.opencode/skills/<name>/`. Every skill in `.opencode/skills/` must also exist in `.claude/skills/`; edit both together, never one alone.
+Skills live once, in `.agents/skills/<name>/SKILL.md`. `.claude/skills` is a symlink to `../.agents/skills`, so edit only under `.agents/skills/`.
 
 ### 1. Workato Project Cataloguer (`.claude/skills/workato-project-cataloguer/`)
 Automatically discovers and catalogs all recipes in your Workato workspace.
@@ -112,6 +112,16 @@ End-to-end setup of a Microsoft Teams Enterprise Workbot: Teams Developer CLI cr
 "Publish my Teams bot to the org"
 ```
 
+### 4. Workato Entra SSO Setup (`.claude/skills/workato-entra-sso-setup/`)
+Guided SAML SSO between the Workflow apps portal and Microsoft Entra, following Workato's "SAML SSO with Entra" guide. The Azure CLI (Microsoft Graph) creates the non-gallery enterprise app, SAML Entity ID / Reply URL, the `workato_app_user_name` claim, a signing certificate, the optional group claim and group assignment, and prints the App Federation Metadata URL. The Workato Portal settings > Security steps have no API and are guided by hand. Needs only `az login`. Not yet run against a live tenant. Includes `references/manual-fallback.md` and `scripts/` (preflight, provision with `--dry-run`, verify).
+
+**Commands**:
+```
+"Set up SSO for Workflow apps with Entra"
+"Configure SAML for the Workflow apps portal"
+"Set up Entra group sync for Workflow apps"
+```
+
 ## Other Agent Briefing Folders
 
 This repo is configured for several agent clients. Keep them aligned when changing skills, MCP endpoints, or setup steps.
@@ -119,17 +129,14 @@ This repo is configured for several agent clients. Keep them aligned when changi
 | Folder / file | Client | Notes |
 |---|---|---|
 | `.claude/` (`claude.md`, `skills/`) | Claude Code / Claude Desktop | This briefing. Project MCP config is `.mcp.json`. |
-| `.opencode/` | OpenCode (also Cursor, generic MCP clients) | `opencode.jsonc` is the main config. Skills are auto-discovered from `.opencode/skills/<name>/SKILL.md`. |
-| `.opencode/mcps/` | Claude Desktop, Cursor, generic MCP | `claude-desktop-config.json`, `cursor-config.json`, `generic-mcp-client-config.json` |
+| `opencode.jsonc` (repo root) | OpenCode (also Cursor, generic MCP clients) | The main OpenCode config. Skills are auto-discovered from `.agents/skills/<name>/SKILL.md`. |
 | `claude_desktop_config.json` (repo root) | Claude Desktop | Example config; endpoints follow your data centre (data centre is set by the guided setup) |
-
-Guides inside `.opencode/`: `README.md`, `SETUP-BY-CLIENT.md`, `COMPATIBILITY.md`, `FILE-GUIDE.md`, `INDEX.md`, `MIGRATION-SUMMARY.md`.
 
 Differences to be aware of:
 - OpenCode reads tokens from the shell environment (`{env:WORKATO_API_TOKEN}`); these other-client configs are not yet migrated to `WORKATO_CODE_DEV`. Claude Code uses `.mcp.json` rendered from `.mcp.template.json`, with `Authorization: Bearer ${WORKATO_CODE_DEV}` expanded by Claude Code at startup (so Claude must be started from a terminal that has the variable).
 - Data centre: chosen in the guided setup (step 2) and written into the generated `.mcp.json` URLs (`us` -> `app.workato.com`, others -> `app.<code>.workato.com`; supported: us, eu, jp, sg, au, il, kr, uk, trial). A token only works in its own data centre.
 - Claude Desktop and generic `mcp-remote` configs take the token as `AUTH_HEADER` (`Bearer <token>`) in their `env` block; Cursor uses `${env:WORKATO_API_TOKEN}`.
-- `.opencode/skills/workato-teams-bot-setup/CLAUDE.md` is a Claude-oriented briefing for that skill; it is mirrored into `.claude/skills/workato-teams-bot-setup/`.
+- `.agents/skills/workato-teams-bot-setup/CLAUDE.md` is a Claude-oriented briefing for that skill.
 
 ## Workflow Examples
 

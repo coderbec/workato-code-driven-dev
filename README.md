@@ -222,49 +222,47 @@ az keyvault secret show --vault-name kv-workato-dev --name db-password
 
 ```
 workato-code-driven-dev/
-├── README.md                          # This file (you are here)
+├── README.md, AGENTS.md               # Overview; agent briefing
+├── SETUP.md, GITHUB-SETUP.md          # Setup guides
+├── ARCHITECTURE.md, CONTRIBUTING.md   # Design notes; contribution guide
+├── package.json                       # NPM scripts (setup, wk:*, terraform:*, check:customer-assets)
 ├── .mcp.template.json                 # MCP config template (setup renders .mcp.json from it)
-├── .gitignore                         # Git ignore rules
-├── mcp.json                           # MCP server configuration (legacy)
-├── claude_desktop_config.json         # Claude Desktop MCP setup
-├── linter-config.json                 # Recipe linting rules
-├── package.json                       # NPM dependencies & scripts
-│
-├── recipes/                           # 🎯 Recipe JSON files here
-│   ├── .gitkeep
-│   └── [your recipes].json
-│
-├── recipe-templates/                  # 📋 Template recipes
-│   └── basic_sync_template.json
-│
-├── terraform/                         # 🏗️ Infrastructure as Code
-│   ├── main.tf                        # Azure resources
-│   ├── variables.tf                   # Input variables
-│   ├── outputs.tf                     # Output values
-│   └── environments/
-│       ├── dev.tfvars.example
-│       ├── staging.tfvars.example
-│       └── prod.tfvars.example
-│
-├── scripts/                           # 🔧 Helper scripts
-│   ├── setup.js                       # Setup wizard
-│   └── setup-db-connection.sh         # Database setup (TODO)
-│
 ├── opencode.jsonc                     # OpenCode config (auto-detected)
+├── claude_desktop_config.json         # Example Claude Desktop MCP config
+├── linter-config.json                 # Recipe linting rules (linter not wired up yet)
 │
 ├── .agents/skills/                    # ⭐ The only copy of the skills (read by OpenCode, Codex, Cursor)
-│   ├── workato-project-cataloguer/SKILL.md
-│   └── workato-cli-orchestrator/SKILL.md
+│   ├── workato-setup/                 #    guided first-run setup
+│   ├── workato-project-cataloguer/
+│   ├── workato-cli-orchestrator/
+│   ├── workato-teams-bot-setup/
+│   └── workato-entra-sso-setup/
 │
 ├── .claude/                           # 🤖 Claude Code
 │   ├── claude.md                      # Claude configuration guide
 │   └── skills -> ../.agents/skills    # Symlink, not a copy
 │
-└── .github/                           # 🚀 GitHub Actions (TODO)
-    ├── workflows/
-    │   ├── lint.yml
-    │   ├── test.yml
-    │   └── deploy.yml
+├── recipes/                           # 🎯 wk working directory (hydrated from Workato)
+│   └── .gitkeep                       #    Everything else here is customer-specific and gitignored
+│
+├── recipe-templates/                  # 📋 Template recipes
+│   └── basic_sync_template.json
+│
+├── terraform/                         # 🏗️ Infrastructure as Code
+│   ├── main.tf, variables.tf, outputs.tf
+│   └── environments/                  #    dev / staging / prod .tfvars.example
+│
+├── scripts/                           # 🔧 Helper scripts
+│   ├── setup.js, setup/, lib/         #    guided setup and shared helpers
+│   ├── discover-projects.js, hydrate-projects*.js
+│   ├── check-no-customer-assets.sh    #    guard: blocks customer material from commits
+│   └── setup-db-connection.sh         #    database setup (TODO)
+│
+├── .githooks/pre-commit               # Runs the guard (enabled by `npm install`)
+└── .github/workflows/                 # 🚀 GitHub Actions
+    ├── lint.yml                       #    recipe lint (placeholder)
+    ├── guard.yml                      #    fails if customer files are tracked
+    └── terraform.yml                  #    Terraform plan
 ```
 
 **ℹ️ Note**: Skills live once, in `.agents/skills/`. OpenCode reads that folder directly and `.claude/skills` is a symlink to it, so there is nothing to keep in sync.

@@ -7,4 +7,4 @@ Read `SKILL.md` first; it is the full procedure. Short version for orientation:
 - **Secrets:** the client secret exists only in memory (CLI JSON output to the Workato API). Never write it to a file, print it, or route it through an MCP tool call.
 - **Scripts:** `scripts/preflight.js`, `provision.js`, `publish.js`, `workato-profile.js`, helpers in `lib.js` / `workato.js`; tests in `scripts/teams-bot.test.js` (`node --test`).
 - **Prerequisite:** the main guided setup (`start workato setup`) so `WORKATO_CODE_DEV` and `.mcp.json` exist.
-- **Mirroring:** this skill lives in `.claude/skills/`, `.opencode/skills/` and `.agents/skills/`; edit all three together.
+- **Location:** the only copy is `.agents/skills/`; `.claude/skills` is a symlink to it.
