@@ -76,7 +76,7 @@ Create `.Codex/cursor.json` in your workspace settings.
 
 ## Included Skills
 
-Skills live in `.Codex/skills/<name>/SKILL.md` and are mirrored from `.opencode/skills/<name>/`. Every skill in `.opencode/skills/` must also exist in `.Codex/skills/`; edit both together, never one alone.
+Skills live once, in `.agents/skills/<name>/SKILL.md`. `.claude/skills` and `.opencode/skills` are symlinks to `../.agents/skills`, so edit only under `.agents/skills/`.
 
 ### 1. Workato Project Cataloguer (`.Codex/skills/workato-project-cataloguer/`)
 Automatically discovers and catalogs all recipes in your Workato workspace.
@@ -129,7 +129,7 @@ Differences to be aware of:
 - OpenCode reads tokens from the shell environment (`{env:WORKATO_API_TOKEN}`); these other-client configs are not yet migrated to `WORKATO_CODE_DEV`. Claude Code uses `.mcp.json` rendered from `.mcp.template.json`, with `Authorization: Bearer ${WORKATO_CODE_DEV}` expanded by Claude Code at startup (so Claude must be started from a terminal that has the variable).
 - Data centre: chosen in the guided setup (step 2) and written into the generated `.mcp.json` URLs (`us` -> `app.workato.com`, others -> `app.<code>.workato.com`; supported: us, eu, jp, sg, au, il, kr, uk, trial). A token only works in its own data centre.
 - Claude Desktop and generic `mcp-remote` configs take the token as `AUTH_HEADER` (`Bearer <token>`) in their `env` block; Cursor uses `${env:WORKATO_API_TOKEN}`.
-- `.opencode/skills/workato-teams-bot-setup/AGENTS.md` is a Codex-oriented briefing for that skill; it is mirrored into `.Codex/skills/workato-teams-bot-setup/`.
+- `.opencode/skills/workato-teams-bot-setup/AGENTS.md` is a Codex-oriented briefing for that skill (`.opencode/skills` is a symlink to `.agents/skills`).
 
 ## Workflow Examples
 

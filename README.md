@@ -335,7 +335,7 @@ This project includes specialized skills for Claude Desktop, OpenCode, and Curso
 
 **Say**: "Set up a Teams bot" (needs Node 22.12+, the `teams` CLI, `az login`, and custom app upload enabled in your tenant; preflight checks all of this).
 
-**Location**: `.claude/skills/workato-teams-bot-setup/` (mirrored in `.opencode/skills/` and `.agents/skills/`). Start with `SKILL.md`.
+**Location**: `.agents/skills/workato-teams-bot-setup/` (`.claude/skills` and `.opencode/skills` are symlinks to `.agents/skills`). Start with `SKILL.md`.
 
 ---
 
