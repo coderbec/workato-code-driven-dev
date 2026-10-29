@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Step 3: render .mcp.template.json -> .mcp.json for a data centre, then probe both URLs.
+ * Step 5: render .mcp.template.json -> <workspace root>/.mcp.json for a data centre, then probe both URLs.
  * Usage: node scripts/setup/apply-data-centre.js --dc eu
  */
-const path = require('path');
 const { renderMcpConfig, DATA_CENTERS } = require('../lib/data-centers');
+const { resolvePaths } = require('../lib/paths');
 
-const root = path.resolve(__dirname, '..', '..');
+const { workspaceRoot: root } = resolvePaths();
 const i = process.argv.indexOf('--dc');
 const dc = i > -1 ? process.argv[i + 1] : null;
 if (!dc) {
@@ -35,7 +35,7 @@ async function probe(label, url) {
 (async () => {
   let result;
   try { result = renderMcpConfig(root, dc); } catch (e) { console.error(`FAIL: ${e.message}`); process.exit(1); }
-  console.log(`Wrote ${result.file} for data centre "${result.urls.dc}" (header auth via \${WORKATO_CODE_DEV}; no token stored in the file).`);
+  console.log(`${result.merged ? 'Updated' : 'Wrote'} ${result.path} for data centre "${result.urls.dc}"${result.merged ? ' (merged: other servers in the file were kept)' : ''} (header auth via \${WORKATO_CODE_DEV}; no token stored in the file).`);
   const a = await probe('Developer API MCP', result.urls.developerApiMcp);
   const b = await probe('AIRO MCP', result.urls.airoMcp);
   process.exit(a && b ? 0 : 3);

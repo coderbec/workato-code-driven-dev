@@ -55,7 +55,7 @@ cd workato-code-driven-dev
 
 Everything from installing the wk CLI to pulling recipes is done by the guided setup in Claude Code. There is no `.env` file and no manual token handling.
 
-1. In a terminal in this folder, run `claude`.
+1. From the workspace folder (the one that contains this repo), run `node workato-code-driven-dev/scripts/bootstrap.js` once, then start `claude` there.
 2. Type **`start workato setup`** (or **`/workato-setup`**).
 3. Follow the prompts. Claude says what it is doing at each step.
 
@@ -68,20 +68,20 @@ Everything from installing the wk CLI to pulling recipes is done by the guided s
 | | 4. wk profile | Creates a new `workato-code-dev-N` profile and makes it the default |
 | | 5. MCP config | Generates `.mcp.json` for the Developer API MCP and AIRO MCP (header auth) |
 | Restart | 6. Restart Claude | Exit, run `claude` again, approve the two MCP servers, run `/mcp` and check both say **connected** |
-| After restart | 7-9. Projects | Confirms the MCPs, lists your projects, hydrates the ones you pick into `recipes/` |
+| After restart | 7-9. Projects | Confirms the MCPs, lists your projects, hydrates the ones you pick into `Workspace Projects/` (next to this repo) |
 
 ### Get your Workato API token
 1. Go to **Workspace admin** > **API clients**
 2. Create a client with a role that includes the **Developer API MCP** and **AIRO MCP** tools
 3. Copy the token (it is shown once)
 
-### Set the profile variable (new terminal, same project folder)
+### Set the profile variable (new terminal)
 | OS | Command |
 |---|---|
 | macOS (zsh) | `echo 'export WORKATO_CODE_DEV="<token>"' >> ~/.zshrc` |
 | Windows (PowerShell, cmd or VS Code terminal) | `setx WORKATO_CODE_DEV "<token>"` |
 
-Then fully quit and reopen VS Code (if you use it), run `claude` in this folder and say **start workato setup** again.
+Then fully quit and reopen VS Code (if you use it), run `claude` in the workspace folder (the one containing this repo and `Workspace Projects/`) and say **start workato setup** again.
 
 ### Azure credentials (optional, only for Terraform)
 Do not put these in a file in this repo. Sign in with `az login`, or export `TF_VAR_*` variables in your shell, or keep a values file outside the repo.
@@ -260,7 +260,7 @@ az --version
 npm run wk:status
 
 # Check recipes downloaded
-ls recipes/ | wc -l
+ls "Workspace Projects/" | wc -l      # run from the workspace folder
 
 # Check Git
 git status

@@ -64,20 +64,34 @@ function detectFromUrl(url) {
 }
 
 /**
- * Render .mcp.template.json to .mcp.json for a data centre.
+ * Render .mcp.template.json (in this repo) to .mcp.json in the workspace root for a data centre.
  * The template uses {{DEVELOPER_API_MCP_URL}} and {{AIRO_MCP_URL}} placeholders.
  * The token is never written: the template references ${WORKATO_CODE_DEV}, which Claude Code expands.
+ * An existing .mcp.json is merged, not replaced: only the servers named in the template are added or
+ * updated, so any other servers already configured there are kept. An unreadable existing file is an error.
  */
-function renderMcpConfig(root, code) {
+function renderMcpConfig(workspaceRoot, code, { templateDir = path.resolve(__dirname, '..', '..') } = {}) {
   const u = urlsFor(code);
-  const template = fs.readFileSync(path.join(root, MCP_TEMPLATE), 'utf-8');
+  const template = fs.readFileSync(path.join(templateDir, MCP_TEMPLATE), 'utf-8');
   const rendered = template
     .replace(/\{\{DEVELOPER_API_MCP_URL\}\}/g, u.developerApiMcp)
     .replace(/\{\{AIRO_MCP_URL\}\}/g, u.airoMcp);
-  JSON.parse(rendered); // fail loudly rather than write a broken config
-  const out = path.join(root, MCP_OUTPUT);
-  fs.writeFileSync(out, rendered);
-  return { urls: u, file: MCP_OUTPUT };
+  const ours = JSON.parse(rendered); // fail loudly rather than write a broken config
+  const out = path.join(workspaceRoot, MCP_OUTPUT);
+  let merged = false;
+  let config = ours;
+  if (fs.existsSync(out)) {
+    let existing;
+    try {
+      existing = JSON.parse(fs.readFileSync(out, 'utf-8'));
+    } catch (e) {
+      throw new Error(`${out} exists but is not valid JSON (${e.message}). Fix or move it, then re-run.`);
+    }
+    config = { ...existing, mcpServers: { ...(existing.mcpServers || {}), ...ours.mcpServers } };
+    merged = true;
+  }
+  fs.writeFileSync(out, JSON.stringify(config, null, 2) + '\n');
+  return { urls: u, file: MCP_OUTPUT, path: out, merged };
 }
 
 /** Arguments for `wk auth login`: wk validates --region against a shorter list, so fall back to --base-url. */

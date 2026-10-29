@@ -20,7 +20,7 @@ case "$mode" in
 esac
 
 # Path patterns (extended regex). Edit here to widen the guard.
-path_re='^recipes/|(^|/)\.wk/|(^|/)wk\.toml$|(^|/)\.workato/|^packages/|(^|/)\.mcp\.json$|\.(recipe|connection|decision_engine_model|mcp_server|topic|workato_db_table|custom_adapter|agentic_[a-z_]+)\.(json|rb|png|jpe?g)$'
+path_re='^recipes/|^Workspace Projects/|(^|/)\.wk/|(^|/)wk\.toml$|(^|/)\.workato/|^packages/|(^|/)\.mcp\.json$|\.(recipe|connection|decision_engine_model|mcp_server|topic|workato_db_table|custom_adapter|agentic_[a-z_]+)\.(json|rb|png|jpe?g)$'
 # Content patterns for added lines (customer / person identifiers). They are NOT
 # kept in this public repo: put one extended regex per line in the untracked file
 # .git/customer-patterns (or point GUARD_PATTERNS_FILE elsewhere).
@@ -30,7 +30,7 @@ if [ -s "$patterns_file" ]; then
   content_re=$(grep -vE '^\s*(#|$)' "$patterns_file" | paste -sd '|' -)
 fi
 
-bad=$(printf '%s\n' "$files" | grep -E "$path_re" | grep -vE '^recipes/\.gitkeep$' || true)
+bad=$(printf '%s\n' "$files" | grep -E "$path_re" || true)
 
 bad_content=""
 if [ "$mode" = "staged" ] && [ -n "$content_re" ]; then
@@ -41,7 +41,7 @@ fi
 if [ -n "$bad" ] || [ -n "$bad_content" ]; then
   echo "BLOCKED: customer-specific material must not be committed to this repo." >&2
   if [ -n "$bad" ]; then
-    echo "" >&2; echo "Files:" >&2; printf '  %s\n' $bad >&2
+    echo "" >&2; echo "Files:" >&2; printf '%s\n' "$bad" | sed 's/^/  /' >&2
     echo "" >&2; echo "Unstage with: git restore --staged <file>   (or git rm --cached <file>)" >&2
   fi
   if [ -n "$bad_content" ]; then

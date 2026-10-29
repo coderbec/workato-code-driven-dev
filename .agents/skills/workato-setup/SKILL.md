@@ -1,6 +1,6 @@
 ---
 name: workato-setup
-description: Guided first-run setup for this repo. Use when the user says "start workato setup" (or runs /workato-setup), or asks to set up, configure or get started with this Workato code-driven-dev project. Checks the WORKATO_CODE_DEV profile variable, asks the data centre, installs Workato Developer Labs (wk CLI etc.), creates a wk auth profile, writes the Developer API and AIRO MCP config (header auth), has the user restart Claude so the MCPs connect, then lists and hydrates chosen projects.
+description: Guided first-run setup for this repo and its workspace folder. Use when the user says "start workato setup" (or runs /workato-setup), or asks to set up, configure or get started with this Workato code-driven-dev project. Checks the WORKATO_CODE_DEV profile variable, asks the data centre, installs Workato Developer Labs (wk CLI etc.), creates a wk auth profile, writes the Developer API and AIRO MCP config (header auth), has the user restart Claude so the MCPs connect, then lists and hydrates chosen projects.
 ---
 
 # Workato guided setup
@@ -18,14 +18,18 @@ Triggered by the phrase **start workato setup** or the slash command **/workato-
 - **Auth failures do not auto-retry.** If an MCP authenticate or login fails once, stop, tell the user, and wait. Never use OAuth for these servers; they use header auth only.
 - **One component failing never stops the run.** Report it, continue, and list failures in the final summary.
 - Use human-readable Workato names (project names as shown in the UI), not IDs.
-- All commands are cross-platform Node scripts under `scripts/setup/`, run from the repo root.
+- All commands are cross-platform Node scripts under `scripts/setup/`. They are written below relative to the repo folder `workato-code-driven-dev/`; from the workspace root, run them as `node workato-code-driven-dev/scripts/setup/<name>.js`. They find their paths from their own location, so the working directory does not matter.
+- **Layout.** The *workspace root* is the folder that contains the `workato-code-driven-dev/` repo. Everything customer-specific lives there, outside the repo: `Workspace Projects/` (the hydrated Workato projects, a `wk` container) and `.mcp.json`. Claude must be started from the workspace root. Never write hydrated files or `.mcp.json` inside the repo.
 
 # Phase A: before the restart
+
+## Step 0: Prepare the workspace folder
+Run `node scripts/bootstrap.js` (from the workspace root: `node workato-code-driven-dev/scripts/bootstrap.js`). It is safe to repeat: it creates `Workspace Projects/`, adds missing entries to the workspace `.gitignore`, creates a `CLAUDE.md` scaffold only if none exists, and links the skills into `.claude/skills`. Relay what it created. If it reports the skills link could not be made (for example Windows without symlink rights), tell the user it does not block setup.
 
 ## Step 1/9: Check the WORKATO_CODE_DEV profile variable
 Run `node scripts/setup/check-profile-var.js`. PASS: go to step 2. FAIL: **stop** and give these instructions, then wait; do not continue.
 
-> `WORKATO_CODE_DEV` is not set. It holds your Workato API token (Workspace admin > API clients; the client role needs the **Developer API MCP** and **AIRO MCP** tools enabled). Set it **in a new terminal window** (not this Claude session), in the same project folder:
+> `WORKATO_CODE_DEV` is not set. It holds your Workato API token (Workspace admin > API clients; the client role needs the **Developer API MCP** and **AIRO MCP** tools enabled). Set it **in a new terminal window** (not this Claude session):
 >
 > **macOS (zsh, including the VS Code terminal on Mac)**
 > ```
@@ -40,7 +44,7 @@ Run `node scripts/setup/check-profile-var.js`. PASS: go to step 2. FAIL: **stop*
 >
 > Then:
 > 1. Close that terminal. **If you use VS Code, fully quit and reopen VS Code**; terminals only see variables that existed when VS Code started. On Windows, `setx` only affects windows opened afterwards.
-> 2. Open a terminal in this same project folder and run `claude`.
+> 2. Open a terminal in the **workspace folder** (the one that contains `workato-code-driven-dev/` and `Workspace Projects/`) and run `claude`.
 > 3. Say **start workato setup** (or `/workato-setup`). Setup resumes from step 2.
 
 ## Step 2/9: Data centre
@@ -54,9 +58,9 @@ Needs the wk CLI from step 3. If it is missing, say step 4 is skipped, how to fi
 Run `node scripts/setup/wk-profile.js --dc <code>`. It creates a **new** profile `workato-code-dev-N` (next unused number; existing profiles are never overwritten), makes it the default, and runs `wk auth status`.
 
 ## Step 5/9: Write the MCP configuration (header auth only)
-Run `node scripts/setup/apply-data-centre.js --dc <code>`. It renders `.mcp.template.json` into `.mcp.json` (gitignored) for the **Developer API MCP** (`/mcp`) and **AIRO MCP** (`/airo_mcp`), both with `Authorization: Bearer ${WORKATO_CODE_DEV}`, then probes both URLs without credentials and expects HTTP 401. A WARN means the URL may be wrong or blocked: tell the user, do not guess.
+Run `node scripts/setup/apply-data-centre.js --dc <code>`. It renders `.mcp.template.json` into `.mcp.json` **in the workspace root** (gitignored; an existing `.mcp.json` is merged, so any other servers in it are kept) for the **Developer API MCP** (`/mcp`) and **AIRO MCP** (`/airo_mcp`), both with `Authorization: Bearer ${WORKATO_CODE_DEV}`, then probes both URLs without credentials and expects HTTP 401. A WARN means the URL may be wrong or blocked: tell the user, do not guess.
 
-Then run `node scripts/setup/status.js` and show the user the checklist: all four items must be DONE before the restart. Fix or explain anything PENDING first.
+Then run `node scripts/setup/status.js` and show the user the checklist: `workspace-layout`, `profile-variable`, `mcp-config`, `wk-cli` and `wk-profile` must all be DONE before the restart. Fix or explain anything PENDING first.
 
 # Restart
 
@@ -66,8 +70,8 @@ MCP servers are read when Claude starts, so the setup cannot continue until Clau
 > **Everything that can be set up now is done.** You need to restart Claude so the two Workato MCP servers connect.
 >
 > 1. Exit this session (`/exit`, or Ctrl+C twice).
-> 2. In a terminal **in this same project folder** (the one that has `WORKATO_CODE_DEV`; in VS Code use the integrated terminal), run `claude`.
-> 3. **What you should see:** a prompt to approve the project's MCP servers `workato-developer-api` and `workato-airo`. Approve both (use "use this and all future MCP servers in this project" if offered).
+> 2. In a terminal **in the workspace folder** (the one that contains `workato-code-driven-dev/` and `Workspace Projects/`, and where `WORKATO_CODE_DEV` is set; in VS Code use the integrated terminal), run `claude`. Claude reads `.mcp.json` from the folder it starts in, so starting it inside `workato-code-driven-dev/` would not connect the MCP servers.
+> 3. **What you should see:** a prompt to approve the workspace's MCP servers `workato-developer-api` and `workato-airo`. Approve both (use "use this and all future MCP servers in this project" if offered).
 > 4. Run `/mcp`. **What you should see:** both servers listed as **connected**.
 > 5. Say **continue workato setup** (or **start workato setup** again). I will confirm the MCPs and finish: project selection and hydration.
 >
@@ -92,7 +96,7 @@ Then check the MCP tools are available in this session (ToolSearch for `workato-
 Use the **Developer API MCP** tool `get_projects` to list project names. Present a numbered list and ask which to hydrate (any number, or "all").
 
 ## Step 9/9: Hydrate
-Run `node scripts/hydrate-projects.js "Project A" "Project B"` for the chosen projects, announcing each. `recipes/` is local, gitignored working state. Finish with a summary: what installed (and anything that failed), which wk profile is default, MCP servers connected, which projects hydrated. Close with: "You're ready to go."
+Run `node scripts/hydrate-projects.js "Project A" "Project B"` for the chosen projects, announcing each. The projects land in `Workspace Projects/`, which is customer-specific working state outside the repo and never committed. Finish with a summary: what installed (and anything that failed), which wk profile is default, MCP servers connected, which projects hydrated. Close with: "You're ready to go."
 
 ## Re-running
-Safe to repeat. Step 3 skips what is installed. Step 4 makes a fresh numbered profile only if status shows no active `workato-code-dev-N` profile (otherwise offer to skip it). Step 5 re-renders the config.
+Safe to repeat. Step 3 skips what is installed. Step 4 makes a fresh numbered profile only if status shows no active `workato-code-dev-N` profile (otherwise offer to skip it). Step 5 re-renders the config (merging into any existing `.mcp.json`). Step 0 only adds what is missing.

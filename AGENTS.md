@@ -47,7 +47,7 @@ This project is configured to work with Codex Desktop and Cursor via MCP (Model 
 ## Setup Instructions
 
 ### 1. Run the guided setup
-Open this folder in a terminal, run `claude`, and say **`start workato setup`** (or `/workato-setup`). The skill `workato-setup` checks the `WORKATO_CODE_DEV` profile variable (your API token; shown how to set on macOS/Windows if missing), asks the data centre, installs Workato Developer Labs, creates a `workato-code-dev-N` wk profile, renders `.mcp.json` from `.mcp.template.json`, then has you restart Claude so the MCPs connect (check with `/mcp`) and finally hydrates the projects you choose (`continue workato setup` after the restart). No `.env` file is used.
+Run `node workato-code-driven-dev/scripts/bootstrap.js` once from the workspace folder (the folder that contains this repo), then open that workspace folder in a terminal, run `claude`, and say **`start workato setup`** (or `/workato-setup`). The skill `workato-setup` checks the `WORKATO_CODE_DEV` profile variable (your API token; shown how to set on macOS/Windows if missing), asks the data centre, installs Workato Developer Labs, creates a `workato-code-dev-N` wk profile, renders `.mcp.json` from `.mcp.template.json`, then has you restart Claude so the MCPs connect (check with `/mcp`) and finally hydrates the projects you choose (`continue workato setup` after the restart). No `.env` file is used.
 
 ### 2. Configure (other clients, optional)
 Claude Code needs nothing further: the guided setup already produced `.mcp.json`. The configs below are for other clients, which still use the older token handling and are not yet part of the guided setup.
@@ -179,7 +179,7 @@ Differences to be aware of:
 - ✅ Use header authentication (not token in body)
 - ✅ Rotate API tokens regularly
 - ✅ Use least-privilege API client roles
-- 🚫 **This repo is public and only holds reusable tooling and skills. Never commit anything hydrated from a Workato workspace** (`recipes/`, `.wk/`, `wk.toml`, `*.recipe.json`, `*.connection.json`, `packages/`, customer names, emails or IDs). It belongs to the customer. `.gitignore` ignores it, and `scripts/check-no-customer-assets.sh` (pre-commit hook via `core.hooksPath=.githooks`, plus the `guard` CI workflow) blocks it even with `git add -f`. Never bypass the hook with `--no-verify`.
+- 🚫 **This repo is public and only holds reusable tooling and skills. Never commit anything hydrated from a Workato workspace** (`Workspace Projects/`, `recipes/`, `.wk/`, `wk.toml`, `*.recipe.json`, `*.connection.json`, `packages/`, customer names, emails or IDs). It belongs to the customer. `.gitignore` ignores it, and `scripts/check-no-customer-assets.sh` (pre-commit hook via `core.hooksPath=.githooks`, plus the `guard` CI workflow) blocks it even with `git add -f`. Never bypass the hook with `--no-verify`.
 
 ## Additional Resources
 

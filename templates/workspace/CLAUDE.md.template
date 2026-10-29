@@ -1,0 +1,18 @@
+# CLAUDE.md
+
+Workspace for Workato development with `{{REPO_DIR}}` (reusable tooling and skills).
+
+## Layout
+
+| Folder | What it is |
+|---|---|
+| `{{REPO_DIR}}/` | Tooling and skills: a separate repo (clone or submodule). Never put customer material in it. |
+| `Workspace Projects/` | Hydrated Workato projects (a `wk` container: `.wk/wk.toml` plus one folder per project). Customer-specific and gitignored; never commit it. |
+| `.mcp.json` | MCP config rendered by the guided setup (gitignored). Claude reads it when started from this folder. |
+
+## Working here
+
+- Start Claude from this folder. First run: say **start workato setup** (or `/workato-setup`).
+- Run wk from `Workspace Projects/`, or use `npm run wk:pull` / `wk:status` / `wk:diff` inside `{{REPO_DIR}}/`.
+- Refer to Workato assets by their UI name, with the ID in brackets only as a secondary reference.
+- Add notes and docs per project in your own folders here, next to `Workspace Projects/`; keep them out of `{{REPO_DIR}}/`.

@@ -15,7 +15,7 @@ Thank you for contributing to Workato Code-Driven Development! This guide explai
 ### 1. Use a Template
 
 ```bash
-cp recipe-templates/basic_sync_template.json recipes/my_new_recipe.json
+cp recipe-templates/basic_sync_template.json "Workspace Projects/<project>/my_new_recipe.json"
 ```
 
 ### 2. Edit the Recipe
@@ -81,8 +81,10 @@ npm run lint:fix
 ### 4. Commit to Git
 
 ```bash
-git add recipes/my_new_recipe.json
-git commit -m "Add: my_new_recipe - Syncs customers from Salesforce to database"
+# Recipes under "Workspace Projects/" are customer-specific and never committed.
+# Commit only reusable material (templates, skills, scripts, docs):
+git add recipe-templates/my_new_template.json
+git commit -m "Add: my_new_template - Syncs customers from Salesforce to database"
 git push origin feature/my-recipe
 ```
 
@@ -246,7 +248,7 @@ git pull origin develop
 git checkout -b feature/description
 
 # 3. Make changes
-# ... edit recipes/terraform/docs ...
+# ... edit templates/terraform/docs ...
 
 # 4. Test locally
 npm run lint                    # Validate syntax

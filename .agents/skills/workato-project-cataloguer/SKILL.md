@@ -51,7 +51,7 @@ npm run discover:projects
 # Step 2: Hydrate specific projects
 npm run hydrate:projects -- "Data Sync" "Customer API"
 
-# Hydrated files stay local (recipes/ is gitignored, nothing to commit)
+# Hydrated files stay in Workspace Projects/ (outside this repo, never committed)
 git push
 ```
 
@@ -60,7 +60,7 @@ git push
 # Step 1: Discover projects and interactively select which to hydrate
 npm run hydrate:interactive
 
-# Hydrated files stay local (recipes/ is gitignored, nothing to commit)
+# Hydrated files stay in Workspace Projects/ (outside this repo, never committed)
 git push
 ```
 
@@ -130,7 +130,7 @@ What happens:
 1. Validates project names against discovered projects
 2. Calls CLI Orchestrator to hydrate via `wk pull --project [name]`
 3. Downloads full recipe definitions (not just metadata)
-4. Saves to `recipes/[project-name]/` structure
+4. Saves to `Workspace Projects/[project-name]/` structure
 5. Shows summary of hydrated recipes
 6. Provides Git commit recommendations
 
@@ -157,10 +157,10 @@ The recommended first-time setup workflow:
 3. Cataloguer: "Hydrate [selected projects] to Git"
    → Invokes CLI Orchestrator internally
    → Uses wk pull --project [name] for each selected project
-   → Recipes saved to recipes/ directory
+   → Projects saved to Workspace Projects/
    
 4. Git: "Commit these recipes"
-   → recipes/ is gitignored local working state, so there is nothing to commit
+   → Workspace Projects/ is outside this repo and never committed, so there is nothing to commit
    → git push
    
 5. Result: Selective projects are version-controlled, others remain in Workato
@@ -228,7 +228,7 @@ Experiments           |    3    | 3 months ago     | Inactive
 - Accepts project names as command-line arguments
 - Validates projects exist against discovered list
 - For each project, runs `wk pull --folder <ID> --force`
-- Downloads recipes to `recipes/[project-name]/`
+- Downloads recipes to `Workspace Projects/[project-name]/`
 - Shows progress and summary
 
 **How to use**:
@@ -330,12 +330,10 @@ Data Sync    |   24    | ✅ Success
 Customer API |   18    | ✅ Success
 
 ✨ Next Steps:
-1. Review the downloaded recipes in ./recipes/
-2. Note: ./recipes/ is gitignored local working state (not committed)
-3. Start developing with:
-   $ npm run dev
+1. Review the downloaded projects in Workspace Projects/
+2. Note: Workspace Projects/ is customer-specific and lives outside this repo (never committed)
 
-# Hydrated files stay local (recipes/ is gitignored, nothing to commit)
+# Hydrated files stay in Workspace Projects/ (outside this repo, never committed)
 $ git push
 
 Result: 42 recipes now version-controlled, others remain in Workato
@@ -391,10 +389,8 @@ Data Sync    |   24    | ✅ Success
 Customer API |   18    | ✅ Success
 
 ✨ Next Steps:
-1. Review the downloaded recipes in ./recipes/
-2. Note: ./recipes/ is gitignored local working state (not committed)
-3. Start developing with:
-   $ npm run dev
+1. Review the downloaded projects in Workspace Projects/
+2. Note: Workspace Projects/ is customer-specific and lives outside this repo (never committed)
 ```
 
 ## Example Workflow: Ongoing Hydration
@@ -415,7 +411,7 @@ $ npm run hydrate:projects -- "Internal Tools"
 📥 Hydrating: Internal Tools
    └─ 9 recipes hydrated
 
-# Hydrated files stay local (recipes/ is gitignored, nothing to commit)
+# Hydrated files stay in Workspace Projects/ (outside this repo, never committed)
 $ git push
 
 Result: 51 recipes now in Git (9 newly added)
@@ -446,7 +442,7 @@ Result: 51 recipes now in Git (9 newly added)
    → Selective hydration (not all-or-nothing)
    → Only what you need in Git
    
-4. **Keep local**: recipes/ is gitignored local working state, so there is nothing to commit
+4. **Keep local**: Workspace Projects/ is outside this repo and never committed, so there is nothing to commit
 
 ### Ongoing (Add More Projects)
 1. **Review**: "Which projects haven't I hydrated?"

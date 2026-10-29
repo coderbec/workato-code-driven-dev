@@ -124,14 +124,10 @@ Customer Integrations  |   18    | ✅ Success
 
 ✨ Next Steps:
 
-1. Review the downloaded recipes in ./recipes/
+1. Review the downloaded projects in Workspace Projects/
 
-2. Commit your changes:
-   $ git add recipes/
-   $ git commit -m "chore: hydrate projects"
-
-3. Start developing with:
-   $ npm run dev
+2. Note: Workspace Projects/ is customer-specific and lives outside this
+   repo (it is never committed)
 ```
 
 ### Method 2: Two-Step (Manual Control)
@@ -152,10 +148,10 @@ You specify exactly which projects to download.
 
 ## File Organization After Hydration
 
-After hydration, your recipes are organized like this:
+After hydration, your projects are organized like this (in `Workspace Projects/`, next to this repo):
 
 ```
-recipes/
+Workspace Projects/
 ├── data-sync/              # Project name (lowercase, dashes)
 │   ├── recipe-1.json
 │   ├── recipe-2.json
@@ -172,16 +168,7 @@ recipes/
 
 After hydrating projects:
 
-```bash
-# Stage the recipes
-git add recipes/
-
-# Commit with a meaningful message
-git commit -m "chore: hydrate projects - Data Sync & Customer Integrations"
-
-# Push to your repository
-git push
-```
+Hydrated projects are customer-specific and live in `Workspace Projects/`, outside this repo. They are never staged or committed, so there is nothing to push after hydrating.
 
 ## Adding More Projects Later
 
@@ -194,11 +181,6 @@ npm run hydrate:interactive
 
 # Method 2: Manual
 npm run hydrate:projects -- "Internal Tools" "Experiments"
-
-# Commit new recipes
-git add recipes/
-git commit -m "chore: hydrate additional projects - Internal Tools"
-git push
 ```
 
 ## Common Tasks
@@ -227,7 +209,7 @@ npm run hydrate:projects -- "Data Sync" "Customer Sync" "Vendor Sync"
 
 ### Check Which Projects Are Already Hydrated
 ```bash
-ls -la recipes/
+ls -la "Workspace Projects/"
 ```
 
 Compare with the output of:
@@ -291,15 +273,15 @@ wk auth status
 
 **Solution**:
 ```bash
-# List what's in recipes/
-ls -la recipes/
+# List what's in Workspace Projects/
+ls -la "Workspace Projects/"
 
 # The folder name uses lowercase and dashes
 # "Data Sync" → "data-sync"
 # "Customer API" → "customer-api"
 
 # Check with full path
-ls -la recipes/data-sync/
+ls -la "Workspace Projects/data-sync/"
 ```
 
 ## How It Works Under the Hood
@@ -326,7 +308,7 @@ When you run `npm run hydrate:projects -- "Project"`:
 2. **Validates** project exists from discovery data
 3. **For each project**:
    - Finds folder ID
-   - Creates directory: `recipes/[project-name]/`
+   - Creates directory: `Workspace Projects/[project-name]/`
    - Runs: `wk pull --folder <ID> --force`
    - Waits for completion
 4. **Counts recipes** downloaded
@@ -350,12 +332,6 @@ In GitHub Actions:
   run: |
     npm run discover:projects
     npm run hydrate:projects -- "Project 1" "Project 2"
-
-- name: Commit and push
-  run: |
-    git add recipes/
-    git commit -m "CI: Auto-hydrate projects"
-    git push
 ```
 
 ### Custom Selection Logic
@@ -387,9 +363,8 @@ const activeProjects = metadata.projects.filter(p => p.status === 'Active');
 1. **Run discovery**: `npm run discover:projects`
 2. **Review projects**: Understand what you have
 3. **Hydrate initial set**: `npm run hydrate:interactive`
-4. **Commit to Git**: `git add recipes/ && git commit`
-5. **Start developing**: `npm run dev`
-6. **Add more later**: Use same commands to hydrate additional projects
+4. **Work locally**: edit under `Workspace Projects/` and sync with `npm run wk:push` (never committed)
+5. **Add more later**: Use same commands to hydrate additional projects
 
 ## Related Commands
 

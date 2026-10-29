@@ -4,6 +4,9 @@ const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { activeProfile } = require('./lib/wk');
+const { resolvePaths } = require('./lib/paths');
+
+const { projectsDir } = resolvePaths();
 
 const PROFILE = activeProfile();
 if (!PROFILE) {
@@ -43,14 +46,13 @@ function hydrateProjects(projectNames) {
 
   console.log('\n🔄 Hydrating projects...\n');
 
-  // Ensure recipes directory exists and is initialized for wk
-  const recipesDir = path.join(process.cwd(), 'recipes');
-  if (!fs.existsSync(recipesDir)) {
-    fs.mkdirSync(recipesDir, { recursive: true });
+  // Ensure the Workspace Projects folder exists (it is the wk container)
+  if (!fs.existsSync(projectsDir)) {
+    fs.mkdirSync(projectsDir, { recursive: true });
   }
 
   // Setup wk.toml with proper structure
-  const wkDir = path.join(recipesDir, '.wk');
+  const wkDir = path.join(projectsDir, '.wk');
   const wkTomlPath = path.join(wkDir, 'wk.toml');
   
   if (!fs.existsSync(wkTomlPath)) {
@@ -83,7 +85,7 @@ function hydrateProjects(projectNames) {
         syncEntries += `\n[[sync]]\nserver_path = '${projectName}'\nlocal_path = '${projectDirName}'\n`;
       }
       
-      const wkTomlContent = `name = 'workato-recipes'
+      const wkTomlContent = `name = 'workspace-projects'
 profile = '${profile}'
 ${workspaceInfo}${syncEntries}`;
       
@@ -131,7 +133,7 @@ ${workspaceInfo}${syncEntries}`;
 
       // Create project directory structure
       const projectDirName = project.name.toLowerCase().replace(/\s+/g, '-');
-      const projectDir = path.join('recipes', projectDirName);
+      const projectDir = path.join(projectsDir, projectDirName);
       
       if (!fs.existsSync(projectDir)) {
         fs.mkdirSync(projectDir, { recursive: true });
@@ -144,7 +146,7 @@ ${workspaceInfo}${syncEntries}`;
         execSync(
           `wk sync add --sync "${project.name}:${projectDirName}" --no-input --profile ${profile}`,
           {
-            cwd: recipesDir,
+            cwd: projectsDir,
             stdio: ['pipe', 'pipe', 'pipe']
           }
         );
@@ -159,7 +161,7 @@ ${workspaceInfo}${syncEntries}`;
         execSync(
           `wk pull --folder "${project.name}" --force --profile ${profile}`,
           {
-            cwd: recipesDir,
+            cwd: projectsDir,
             stdio: 'inherit',
             timeout: 120000 // 2 minute timeout per project
           }
@@ -225,10 +227,8 @@ ${workspaceInfo}${syncEntries}`;
 
   if (successCount > 0) {
     console.log('✨ Next Steps:\n');
-    console.log('1. Review the downloaded recipes in ./recipes/\n');
-    console.log('2. Note: ./recipes/ is gitignored local working state (not committed)\n');
-    console.log('3. Start developing with:\n');
-    console.log('   $ npm run dev\n');
+    console.log('1. Review the downloaded projects in Workspace Projects/\n');
+    console.log('2. Note: Workspace Projects/ is customer-specific and lives outside this repo (never commit it)\n');
   }
 
   return results;

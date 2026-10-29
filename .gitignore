@@ -48,10 +48,10 @@ Thumbs.db
 
 # Workato
 .workato/auth
-recipes/.wk_cache
-# Hydrated wk pull output (keep only the placeholder so the dir exists)
-recipes/*
-!recipes/.gitkeep
+# Hydrated projects live OUTSIDE this repo, in "Workspace Projects/" next to it. These entries are a
+# safety net in case anything is ever pulled inside the repo.
+recipes/
+Workspace Projects/
 
 # Customer-specific Workato material must NEVER be committed, wherever it lands.
 # Enforced by scripts/check-no-customer-assets.sh (pre-commit hook + CI), which

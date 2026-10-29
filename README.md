@@ -1,6 +1,6 @@
 > ## 🚀 Start here: say **`start workato setup`**
-> Clone this repo, open the folder in a terminal (the VS Code terminal is fine), run `claude`, then type
-> **`start workato setup`** (or the slash command **`/workato-setup`**). Claude walks you through everything and tells you what it is doing at each step:
+> Make a workspace folder, clone this repo into it, run the one-line bootstrap, then start `claude` **from the workspace folder** and type
+> **`start workato setup`** (or the slash command **`/workato-setup`**). See [Quick start](#quick-start) for the commands. Claude walks you through everything and tells you what it is doing at each step:
 > 1. checks your `WORKATO_CODE_DEV` profile variable (your Workato API token) and shows you how to create it if missing
 > 2. asks your data centre and configures the Developer API MCP and AIRO MCP (header auth, written last)
 > 3. installs Workato Developer Labs (wk CLI, Recipe Linter, Developer Skills, Recipe Visualizer) and creates a wk profile, then asks you to **restart Claude** so the MCPs connect
@@ -60,23 +60,31 @@ This is a **production-ready template** for managing Workato integrations using 
 ### Guided setup (about 5 minutes)
 
 ```bash
-git clone https://github.com/your-org/workato-code-driven-dev.git
-cd workato-code-driven-dev
-claude
+mkdir MyWorkato && cd MyWorkato                                        # your workspace folder
+git clone https://github.com/coderbec/workato-code-driven-dev.git      # or add it as a git submodule
+node workato-code-driven-dev/scripts/bootstrap.js                      # creates "Workspace Projects/", .gitignore, CLAUDE.md, skills link
+claude                                                                 # start Claude from the workspace folder
+```
+This gives you:
+```
+MyWorkato/                      # workspace folder (your own git repo, optional)
+├── workato-code-driven-dev/    # this repo: reusable tooling and skills only
+├── Workspace Projects/         # hydrated Workato projects (wk container). Customer-specific, never committed
+└── .mcp.json                   # MCP config written by setup (gitignored)
 ```
 Then type **`start workato setup`** (or **`/workato-setup`**). It runs in two phases with one restart of Claude in the middle (MCP servers only connect when Claude starts):
 
 | Phase | # | Step | What it does |
 |-------|---|------|--------------|
-| A: before restart | 1 | Profile variable | Checks `WORKATO_CODE_DEV`. If missing, it gives the exact command for macOS or Windows to run in a **new** terminal in the same folder, then to restart Claude and rerun the phrase |
+| A: before restart | 1 | Profile variable | Checks `WORKATO_CODE_DEV`. If missing, it gives the exact command for macOS or Windows to run in a **new** terminal, then to restart Claude from the workspace folder and rerun the phrase |
 | | 2 | Data centre | Asks us / eu / jp / sg / au / il / kr / uk / trial |
 | | 3 | Developer Labs | Installs wk CLI, Recipe Linter, Developer Skills and Recipe Visualizer; one failing never blocks the rest |
 | | 4 | wk profile | Creates a new `workato-code-dev-N` profile (never overwrites) and makes it the default |
 | | 5 | MCP config | Generates `.mcp.json` for the Developer API MCP and AIRO MCP, header auth `Bearer ${WORKATO_CODE_DEV}` (no OAuth) |
-| Restart | 6 | **Restart Claude** | Exit, run `claude` again in the same folder, approve the two MCP servers, run `/mcp` and check both say **connected** |
+| Restart | 6 | **Restart Claude** | Exit, run `claude` again in the workspace folder (the one containing this repo and `Workspace Projects/`), approve the two MCP servers, run `/mcp` and check both say **connected** |
 | B: after restart | 7 | Confirm MCPs | Checks the MCP tools are present; when both are connected you are ready to go |
 | | 8 | Projects | Lists your projects through the Developer API MCP so you can pick which to hydrate |
-| | 9 | Hydrate | Pulls the chosen projects into `recipes/` (local, gitignored) with `wk` |
+| | 9 | Hydrate | Pulls the chosen projects into `Workspace Projects/` (next to this repo, never committed) with `wk` |
 
 After the restart, say **`continue workato setup`** and it picks up at step 7. If a server isn't connected, use `/mcp` and **Reconnect** (never OAuth); the skill lists the usual causes: variable not visible to that terminal, token from a different data centre, or an API client role without the MCP tools.
 
@@ -199,11 +207,11 @@ wk auth list                  # see profiles
 wk auth switch <profile>     # change the default
 wk auth status
 
-# Recipe operations
-wk pull recipes/              # Sync from Workato
-wk push recipes/              # Sync to Workato
-wk diff recipes/              # Show changes
-wk status recipes/            # Check status
+# Recipe operations (run from "Workspace Projects/", or use npm run wk:pull / wk:push / wk:diff / wk:status from this repo)
+wk pull                       # Sync from Workato
+wk push                       # Sync to Workato
+wk diff                       # Show changes
+wk status                     # Check status
 
 # Terraform
 terraform -chdir=terraform init
@@ -242,8 +250,7 @@ workato-code-driven-dev/
 │   ├── claude.md                      # Claude configuration guide
 │   └── skills -> ../.agents/skills    # Symlink, not a copy
 │
-├── recipes/                           # 🎯 wk working directory (hydrated from Workato)
-│   └── .gitkeep                       #    Everything else here is customer-specific and gitignored
+│   (hydrated projects are NOT in this repo: they live in "Workspace Projects/", next to it)
 │
 ├── recipe-templates/                  # 📋 Template recipes
 │   └── basic_sync_template.json
@@ -397,13 +404,11 @@ AZURE_CLIENT_SECRET=...
 3. Choose which projects to hydrate:
    "Hydrate Data Sync and Customer API to Git"
    → AI client pulls selected projects via wk CLI
-   → Recipes saved to recipes/ directory
+   → Projects saved to Workspace Projects/ (next to this repo)
    → Shows status of each project
 
-4. Commit initial hydration:
-   git add recipes/
-   git commit -m "Initial hydration: Data Sync & Customer API"
-   git push
+4. Nothing to commit: Workspace Projects/ is customer-specific and
+   stays outside this repo (it is never committed)
 
 5. Later, add more projects as needed:
    "Hydrate Internal Tools to Git"
@@ -420,19 +425,18 @@ Morning:
   3. Resolve any conflicts
 
 During Development:
-  1. Create/edit recipe JSON in recipes/
+  1. Create/edit recipe JSON in Workspace Projects/<project>/
   2. npm run lint (check syntax)
   3. Test in Workato UI (optional)
-  4. git commit (save to Git)
+  4. (Hydrated files stay local: nothing to commit)
 
 Before Push:
   1. Ask AI: "Show me differences between Git and Workato"
   2. npm run wk:push (sync to Workato)
-  3. git push (share with team)
 
 After Work:
   1. Ask AI: "Pull latest recipes from Workato"
-  2. git status (check everything committed)
+  2. npm run wk:status (check sync state)
   
 Or Just Use CLI:
   1. npm run wk:pull
@@ -459,15 +463,13 @@ Or Just Use CLI:
 3. "Hydrate Data Sync and Customer API to Git"
    → CLI Orchestrator pulls via wk CLI
    → Downloads full recipe definitions
-   → Saves to recipes/[project-name]/
+   → Saves to Workspace Projects/[project-name]/
    → Shows: ✅ Data Sync: 24 recipes (OK)
            ✅ Customer API: 18 recipes (OK)
            ⚠️ Remaining: Internal Tools, Experiments (available on request)
 
-4. Git workflow:
-   $ git add recipes/
-   $ git commit -m "Initial hydration: Data Sync & Customer API"
-   $ git push
+4. Nothing to commit:
+   Workspace Projects/ is customer-specific and stays outside this repo
 
 5. Later, add more projects incrementally:
    "Hydrate Internal Tools to Git"
@@ -564,8 +566,8 @@ Push to `main` branch → GitHub Actions → Deploy
 ```
 "Pull all recipes from Workato"
 → Orchestrator uses wk CLI
-→ Downloads recipes to recipes/ directory
-→ Ready to commit to Git
+→ Downloads recipes to Workspace Projects/
+→ Local working copy (never committed)
 
 "Push recipe changes to Workato"
 → Uploads modified recipes
@@ -686,14 +688,15 @@ npm run terraform:init
 
 ## 🤝 Contributing
 
-### Adding a Recipe
-1. Create `recipes/my_recipe.json` (copy from template)
-2. Edit with your logic
+### Adding a Recipe Template
+1. Create `recipe-templates/my_template.json` (copy `basic_sync_template.json`)
+2. Edit with your logic; keep it generic (no customer names, IDs or connections)
 3. `npm run lint` (fix issues)
-4. `git add recipes/my_recipe.json`
-5. `git commit -m "Add: my_recipe"`
+4. `git add recipe-templates/my_template.json`
+5. `git commit -m "Add: my_template"`
 6. `git push`
-7. `npm run wk:push` (deploy to Workato)
+
+To work on a real recipe, edit it under `Workspace Projects/<project>/` and deploy with `npm run wk:push`. That folder is never committed.
 
 ### Updating Terraform
 1. Edit `terraform/main.tf` or related files

@@ -1,0 +1,6 @@
+# Entries bootstrap.js makes sure the workspace .gitignore contains
+Workspace Projects/
+.mcp.json
+.env
+.env.*
+.DS_Store

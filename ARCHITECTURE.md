@@ -22,7 +22,7 @@ This project implements **code-driven Workato development** by combining:
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  Local Git Repository                                       │
-│  └─ recipes/*.json                                         │
+│  └─ Workspace Projects/*                                   │
 │     ├─ my_recipe_1.json                                    │
 │     ├─ my_recipe_2.json                                    │
 │     └─ ...                                                  │
@@ -51,7 +51,7 @@ This project implements **code-driven Workato development** by combining:
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  Main Branch                                                │
-│  ├─ recipes/*.json (approved recipes)                      │
+│  ├─ Workspace Projects/* (local only)                      │
 │  ├─ terraform/ (infrastructure)                            │
 │  └─ ...                                                     │
 │                                                              │
@@ -181,20 +181,20 @@ curl -H "Authorization: Bearer $WORKATO_CODE_DEV" \
 
 #### Pull (Workato → Git)
 ```
-wk pull recipes/
+wk pull   (from Workspace Projects/)
   ↓
 1. Authenticate with Workato API
 2. Fetch all recipes
 3. Convert to JSON
-4. Save to recipes/*.json
+4. Save to Workspace Projects/
 5. Git detects changes
 ```
 
 #### Push (Git → Workato)
 ```
-wk push recipes/
+wk push   (from Workspace Projects/)
   ↓
-1. Read recipes/*.json
+1. Read Workspace Projects/
 2. Lint & validate
 3. Authenticate with Workato API
 4. Create/update recipes in workspace
@@ -281,14 +281,13 @@ Usage: Recipe SQL access
    git checkout -b feature/my-recipe
 
 4. Create/edit recipe
-   recipes/my_recipe.json
+   Workspace Projects/<project>/my_recipe.json
 
 5. Validate locally
    npm run lint
 
-6. Commit to Git
-   git add recipes/my_recipe.json
-   git commit -m "Add: my_recipe"
+6. Keep it local
+   Workspace Projects/ is outside this repo and never committed
 
 7. Push to GitHub
    git push origin feature/my-recipe
@@ -316,7 +315,7 @@ Usage: Recipe SQL access
 
 3. Claude: "Pull latest recipes"
    → Runs wk CLI Orchestrator skill
-   → Saves to recipes/
+   → Saves to Workspace Projects/
 
 4. npm run lint
    → Validates syntax
@@ -332,7 +331,7 @@ Usage: Recipe SQL access
 ### Dev (Local Machine)
 ```
 git branch: feature/*
-Recipe storage: recipes/ directory
+Recipe storage: Workspace Projects/ (local, never committed)
 Terraform: dev.tfvars
 Deploy target: Local Workato workspace
 ```
@@ -340,7 +339,7 @@ Deploy target: Local Workato workspace
 ### Staging
 ```
 git branch: develop
-Recipe storage: recipes/ directory
+Recipe storage: Workspace Projects/ (local, never committed)
 Terraform: staging.tfvars
 Deploy target: Staging Workato workspace
 ```
@@ -348,7 +347,7 @@ Deploy target: Staging Workato workspace
 ### Production
 ```
 git branch: main
-Recipe storage: recipes/ directory
+Recipe storage: Workspace Projects/ (local, never committed)
 Terraform: prod.tfvars
 Deploy target: Production Workato workspace
 Approval: Manual review + merge

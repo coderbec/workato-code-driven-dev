@@ -4,6 +4,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { activeProfile } = require('./lib/wk');
+const { resolvePaths } = require('./lib/paths');
 
 const PROFILE = activeProfile();
 if (!PROFILE) {
@@ -150,7 +151,7 @@ async function discoverProjects() {
     console.log('   $ npm run hydrate:projects -- "Project Name 1" "Project Name 2"\n');
     
     // Save metadata to JSON for programmatic use
-    const metadataPath = path.join('.workato', 'project-metadata.json');
+    const metadataPath = resolvePaths().metadataFile;
     const metadataDir = path.dirname(metadataPath);
     
     if (!fs.existsSync(metadataDir)) {

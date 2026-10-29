@@ -19,14 +19,14 @@ description: Manage recipe synchronization between Git and Workato using the wk 
 
 ### Pull Recipes from Workato
 ```
-Orchestrator: "Pull all recipes from Workato to Git"
+Orchestrator: "Pull all recipes from Workato"
 ```
 
 What happens:
 1. Authenticates with Workato API
 2. Downloads all recipes as JSON files
-3. Saves to `recipes/` directory
-4. Ready to commit to Git
+3. Saves to `Workspace Projects/` (next to this repo)
+4. Local working copy: customer-specific, never committed
 
 Command: `npm run wk:pull`
 
@@ -70,23 +70,19 @@ Command: `npm run wk:status`
 
 ## Workflow Examples
 
-### Example 1: Initial Backup
+### Example 1: Initial Local Copy
 ```
 Step 1: "Pull all recipes from Workato"
-        → Downloads to recipes/ folder
+        → Downloads to Workspace Projects/
 
-Step 2: "Commit these to Git"
-        → git add recipes/
-        → git commit -m "Initial backup of Workato recipes"
-        → git push
-
-Result: All recipes now version-controlled
+Result: A local working copy of every recipe in Workspace Projects/.
+        It is customer-specific, lives outside this repo and is never committed.
 ```
 
 ### Example 2: Edit and Deploy
 ```
 Step 1: Edit recipe file locally
-        recipes/my-recipe.json
+        Workspace Projects/<project>/my-recipe.json
 
 Step 2: "Check the status"
         → Shows local changes

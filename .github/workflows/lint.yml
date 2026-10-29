@@ -4,12 +4,12 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'recipes/**'
+      - 'recipe-templates/**'
       - '.github/workflows/lint.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'recipes/**'
+      - 'recipe-templates/**'
 
 jobs:
   lint:
@@ -32,15 +32,15 @@ jobs:
         
       - name: Check for hardcoded secrets
         run: |
-          if grep -r "password\|secret\|token\|api_key" recipes/ --include="*.json" | grep -v "{{" | grep -v "\${"; then
-            echo "❌ Hardcoded secrets found in recipes!"
+          if grep -r "password\|secret\|token\|api_key" recipe-templates/ --include="*.json" | grep -v "{{" | grep -v "\${"; then
+            echo "❌ Hardcoded secrets found in recipe templates!"
             exit 1
           fi
           echo "✅ No hardcoded secrets detected"
       
       - name: Validate JSON syntax
         run: |
-          for file in recipes/**/*.json; do
+          for file in recipe-templates/*.json; do
             if [ -f "$file" ]; then
               if ! jq empty "$file" 2>/dev/null; then
                 echo "❌ Invalid JSON: $file"
