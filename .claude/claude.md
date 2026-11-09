@@ -122,6 +122,16 @@ Guided SAML SSO between the Workflow apps portal and Microsoft Entra, following 
 "Set up Entra group sync for Workflow apps"
 ```
 
+### 5. Workato MCP App in Microsoft 365 Copilot (`.claude/skills/workato-mcp-app-copilot/`)
+Shows a Workato MCP app (an interactive UI served by an Enterprise MCP server) inside Microsoft 365 Copilot as a declarative agent. Slash command **`/workato-mcp-app-copilot`**. Asks whether to attach to an existing MCP app or make a new one (hydrating an existing one with wk), makes the app HTML self-contained, creates a Copilot copy of the server on Workato ID authentication so the original keeps working, asks which user group gets access (existing or new), then builds, provisions and tests the declarative agent with the Microsoft 365 Agents Toolkit CLI (no Power Platform CLI needed). Includes `scripts/` (`widget-host.js`, `inline-ext-apps.js`, tests) and `references/agent-templates.md`.
+
+**Commands**:
+```
+/workato-mcp-app-copilot
+"Show my MCP app in Copilot"
+"Make a declarative agent for this MCP server"
+```
+
 ## Other Agent Briefing Folders
 
 This repo is configured for several agent clients. Keep them aligned when changing skills, MCP endpoints, or setup steps.

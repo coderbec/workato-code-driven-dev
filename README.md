@@ -244,7 +244,8 @@ workato-code-driven-dev/
 │   ├── workato-project-cataloguer/
 │   ├── workato-cli-orchestrator/
 │   ├── workato-teams-bot-setup/
-│   └── workato-entra-sso-setup/
+│   ├── workato-entra-sso-setup/
+│   └── workato-mcp-app-copilot/       #    MCP app in Microsoft 365 Copilot (/workato-mcp-app-copilot)
 │
 ├── .claude/                           # 🤖 Claude Code
 │   ├── claude.md                      # Claude configuration guide
@@ -332,6 +333,24 @@ This project includes specialized skills for Claude Desktop, OpenCode, and Curso
 **Say**: "Set up a Teams bot" (needs Node 22.12+, the `teams` CLI, `az login`, and custom app upload enabled in your tenant; preflight checks all of this).
 
 **Location**: `.agents/skills/workato-teams-bot-setup/` (`.claude/skills` is a symlink to `.agents/skills`). Start with `SKILL.md`.
+
+---
+
+### 5. **Workato MCP App in Microsoft 365 Copilot**
+**What it does**: Shows a Workato MCP app (an interactive UI served by an Enterprise MCP server) inside Microsoft 365 Copilot as a declarative agent. Run it with **`/workato-mcp-app-copilot`**.
+
+**What it automates**:
+- Asks whether to attach to an existing MCP app or make a new one; an existing one is hydrated into your `wk` project files first
+- Makes the app HTML self-contained for Copilot (inlines the MCP Apps library, removes external fonts)
+- Creates a Copilot copy of the MCP server on Workato ID authentication, so the original keeps working in Claude; computes the Copilot widget host for the new server address
+- Asks which user group gets access, or creates a new one, and assigns it to the server
+- Scaffolds the declarative agent with the Microsoft 365 Agents Toolkit CLI (dynamic client registration with Workato ID), then provisions and tests it
+
+**Still manual**: Microsoft 365 sign-in for the toolkit, tenant settings (custom app upload, Copilot access, developer mode), and adding people to a new user group in the Workato admin settings. Copilot Studio agents are not documented to render MCP apps; the Power Platform CLI is not used.
+
+**Say**: "Show my MCP app in Copilot" (needs Node 22+, the `wk` CLI and a Workato profile, the Workato MCP servers connected, and a Microsoft 365 account that can use Copilot).
+
+**Location**: `.agents/skills/workato-mcp-app-copilot/`. Start with `SKILL.md`; `references/agent-templates.md` holds the manifest templates.
 
 ---
 
